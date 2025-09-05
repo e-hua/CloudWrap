@@ -6,26 +6,22 @@ on:
       - main
     paths:
       - .github/workflows/backend-cd.yml
-      - backend/
+      - backend/**
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Setup SSH Keys
-        run: |
-          mkdir -p ~/.ssh 
-          echo "${{secrets.EC2_SSH_KEY}}" > ~/.ssh/sg-guanhua-mbp.pem
-          chmod 400 ~/.ssh/sg-guanhua-mbp.pem
-          ssh-keyscan -H ec2-13-127-108-110.ap-south-1.compute.amazonaws.com >> ~/.ssh/known_hosts
-
-      - name: Access the EC2 server
-        run: |
-          ssh -i ~/.ssh/sg-guanhua-mbp.pem ubuntu@ec2-13-127-108-110.ap-south-1.compute.amazonaws.com << 'EOF'
+      - name: Restart PM2 application
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.REMOTE_HOST }}
+          username: ${{ secrets.REMOTE_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
             cd ~/CloudWrap
             git pull origin main
             cd backend
             npm install --production
-            pm2 restart app || npm start
-          EOF
+            pm2 reload all || pm2 start server.js
