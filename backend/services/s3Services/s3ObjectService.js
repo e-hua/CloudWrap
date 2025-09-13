@@ -31,7 +31,13 @@ export async function listObjects(credential, bucketName) {
   return response;
 }
 
-export async function putObject(credential, bucketName, key, content) {
+export async function putObject(
+  credential,
+  bucketName,
+  key,
+  content,
+  contentType
+) {
   const client = new S3Client({
     region: region,
     credentials: {
@@ -45,6 +51,7 @@ export async function putObject(credential, bucketName, key, content) {
     Bucket: bucketName,
     Key: key,
     Body: content,
+    ContentType: contentType,
   };
 
   const command = new PutObjectCommand(input);

@@ -3,6 +3,8 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
+// These are the credentials for the cloudWrap offical account
+// We need to set them up in production environment
 const cloudWrapClient = new STSClient({
   region: process.env.AWS_REGION,
   credentials: {
