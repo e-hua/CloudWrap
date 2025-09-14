@@ -1,0 +1,11 @@
+@import "tailwindcss";
+
+html,
+body {
+  height: 100%;
+  background-color: #101010;
+}
+
+@theme {
+  --color-accent: var(--color-teal-500);
+}
