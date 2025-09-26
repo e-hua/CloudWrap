@@ -16,9 +16,9 @@ export default function Sidebar() {
     <div
       className="fixed top-0 left-0 
     h-full w-60 
-    flex flex-col align-middle space-y-4 px-2
-    bg-neutral-900 text-white
-    border-r-[1px] border-r-neutral-800"
+    flex flex-col align-middle space-y-4 px-2 border-r-[1px] 
+    bg-sidebar-background text-text-primary
+    border-sidebar-border"
     >
       <h1 className="text-center">CloudWrap</h1>
       <div>
@@ -53,21 +53,21 @@ function SidebarIcon({ icon, name, beta }) {
     <Link to={name.toLowerCase()}>
       <div
         className={
-          "flex items-center justify-between p-2 hover:bg-neutral-700 rounded-lg " +
-          (isHighlighted ? "bg-neutral-800" : "")
+          "flex items-center justify-between p-2 hover:bg-sidebar-hovered rounded-lg " +
+          (isHighlighted ? "bg-sidebar-selected" : "")
         }
         onClick={() => workspaceSetter(name)}
       >
         <div className="flex items-center space-x-2">
           <div className="text-accent">{icon}</div>
-          <h3 className="text-md text-sm text-neutral-400 font-light">
+          <h3 className="text-md text-sm text-text-primary font-normal font-mono">
             {name}
           </h3>
         </div>
         {beta ? (
           <></>
         ) : (
-          <h5 className="text-xs text-neutral-500 font-bold">soon</h5>
+          <h5 className="text-xs text-text-secondary font-bold">soon</h5>
         )}
       </div>
     </Link>

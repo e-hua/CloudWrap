@@ -8,7 +8,6 @@ import {
   deleteBucket,
   listBuckets,
 } from "../services/s3Services/s3BucketService.js";
-import { DeleteBlueGreenDeploymentCommand } from "@aws-sdk/client-rds";
 import {
   deleteObject,
   getObject,
@@ -31,7 +30,7 @@ router.get("/buckets", async (req, res) => {
     const credential = await assumeRole(ARN);
     const buckets = await listBuckets(credential);
 
-    res.status(200).send(buckets);
+    res.status(200).send(buckets.Buckets);
   } catch (error) {
     res.status(500).json({ err: error.message });
   }
@@ -83,6 +82,7 @@ router.get("/buckets/:bucketName", async (req, res) => {
 // Put single file in a bucket
 router.post(
   "/buckets/:bucketName/:itemName",
+  // Some middleware
   upload.single("file"),
   async (req, res) => {
     try {

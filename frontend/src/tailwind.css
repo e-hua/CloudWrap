@@ -1,11 +1,97 @@
 @import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
 
-html,
-body {
-  height: 100%;
-  background-color: #101010;
+/* Some cool tricks from shadcn lib */
+@theme inline {
+  --color-background: var(--bg-primary);
+  --color-strong: var(--bg-strong);
+  --color-inverted: var(--bg-inverted);
+  --color-accent: var(--accent);
+  --color-button-hover: var(--button-hover);
+  --color-button-active: var(--button-active);
+
+  --color-sidebar-background: var(--bg-elevated-secondary);
+  --color-sidebar-border: var(--border-default); /*Sidebar border*/
+
+  --color-sidebar-hovered: var(--menu-item-highlighted);
+  --color-sidebar-selected: var(--menu-item-active);
+
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+
+  --color-surface-primary: var(--surface-primary);
+  --color-warning: var(--warning);
+  --color-destructive: var(--destructive);
 }
 
-@theme {
-  --color-accent: var(--color-teal-500);
+[data-theme="light"] {
+  --accent: var(--color-teal-500);
+  --bg-primary: #fcfcfc;
+  --bg-strong: #ffffff;
+  --bg-inverted: #212121;
+
+  --button-hover: rgba(0, 0, 0, 0.1);
+  --button-active: rgba(0, 0, 0, 0.2);
+
+  --bg-elevated-secondary: #f9f9f9; /*Sidebar background*/
+  --menu-item-highlighted: #0000000a; /*Sidebat hover */
+  --menu-item-active: #0000000f; /*Sidebar selected */
+
+  --border-default: #0d0d0d1a; /*Sidebar border*/
+  --text-primary: var(--color-neutral-950);
+  --text-secondary: var(--color-neutral-500);
+
+  --surface-primary: #f9f9f9;
+  --warning: #af1d27;
+  --destructive: #fce9ea;
+}
+
+[data-theme="dark"] {
+  --accent: var(--color-teal-500);
+  --bg-primary: #181818;
+  --bg-strong: #050505;
+  --bg-inverted: #fff;
+
+  --button-hover: rgba(255, 255, 255, 0.1);
+  --button-active: rgba(255, 255, 255, 0.2);
+
+  --bg-elevated-secondary: #212121;
+  --menu-item-highlighted: #ffffff1a; /*Sidebat hover */
+  --menu-item-active: #ffffff0d; /*Sidebar selected */
+
+  --border-default: #ffffff26;
+  --text-primary: #fff;
+  --text-secondary: var(--color-neutral-500);
+
+  --surface-primary: #202020;
+  --warning: #f4b3b7;
+  --destructive: #390508;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+@layer base {
+  html {
+    background-color: var(--bg-primary);
+  }
+}
+
+p,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  overflow-wrap: break-word;
+}
+
+@layer utilities {
+  .disabled {
+    opacity: 0.5;
+  }
 }
