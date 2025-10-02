@@ -6,6 +6,9 @@ import {
   deleteObject,
   getObject,
 } from "./s3ObjectService.js";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 const testARN = process.env.USER_ROLE_ARN;
 

@@ -7,9 +7,6 @@ import {
   TerminateInstancesCommand,
   RebootInstancesCommand,
 } from "@aws-sdk/client-ec2";
-import dotenv from "dotenv";
-
-dotenv.config();
 
 const region = process.env.AWS_REGION;
 

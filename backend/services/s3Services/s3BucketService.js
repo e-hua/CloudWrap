@@ -4,9 +4,6 @@ import {
   CreateBucketCommand,
   DeleteBucketCommand,
 } from "@aws-sdk/client-s3";
-import dotenv from "dotenv";
-
-dotenv.config();
 
 const region = process.env.AWS_REGION;
 

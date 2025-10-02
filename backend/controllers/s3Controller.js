@@ -1,5 +1,4 @@
 import express from "express";
-import dotenv from "dotenv";
 import multer from "multer";
 
 import assumeRole from "../services/assumeRoleService.js";
@@ -15,7 +14,6 @@ import {
   putObject,
 } from "../services/s3Services/s3ObjectService.js";
 
-dotenv.config();
 const router = express.Router();
 const upload = multer();
 

@@ -1,5 +1,8 @@
 import assumeRole from "../assumeRoleService.js";
 import { listBuckets, addBucket, deleteBucket } from "./s3BucketService.js";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 const testARN = process.env.USER_ROLE_ARN;
 
