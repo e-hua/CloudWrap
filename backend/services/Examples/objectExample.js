@@ -1,11 +1,15 @@
 import assumeRole from "../assumeRoleService.js";
-import { listBuckets, addBucket, deleteBucket } from "./s3BucketService.js";
+import {
+  listBuckets,
+  addBucket,
+  deleteBucket,
+} from "../s3Services/s3BucketService.js";
 import {
   listObjects,
   putObject,
   deleteObject,
   getObject,
-} from "./s3ObjectService.js";
+} from "../s3Services/s3ObjectService.js";
 import dotenv from "dotenv";
 
 dotenv.config();

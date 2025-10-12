@@ -5,7 +5,7 @@ import {
   startInstance,
   stopInstance,
   terminateInstance,
-} from "./ec2InstanceService.js";
+} from "../ec2Service/ec2InstanceService.js";
 import dotenv from "dotenv";
 dotenv.config();
 

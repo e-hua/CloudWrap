@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 import cors from "cors";
 import s3Router from "./controllers/s3Controller.js";
 import ec2Router from "./controllers/ec2Controller.js";
+import billRouter from "./controllers/billController.js";
 
 dotenv.config();
 const PORT = process.env.PORT || 8080;
@@ -28,3 +29,4 @@ app.use(
 app.use(express.json());
 app.use("/s3", s3Router);
 app.use("/ec2", ec2Router);
+app.use("/bill", billRouter);
