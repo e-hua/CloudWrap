@@ -11,9 +11,9 @@ import {
 } from "lucide-react";
 
 import { parseFileList } from "../../utils/parseFileList";
-import Breadcrumb from "../components/BreadCrumb";
-import Button from "../components/Button";
-import Checkbox from "../components/Checkbox";
+import Breadcrumb from "../components/ui/BreadCrumb";
+import Button from "../components/ui/Button";
+import Checkbox from "../components/ui/Checkbox";
 
 export default function StorageInfoPage() {
   const { storageName } = useParams();

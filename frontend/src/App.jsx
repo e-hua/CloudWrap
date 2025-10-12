@@ -4,6 +4,7 @@ import Layout from "./layout/Layout";
 import { Route, Routes } from "react-router";
 import StoragePage from "./pages/StoragePage";
 import StorageInfoPage from "./pages/StorageInfoPage";
+import InstancePage from "./pages/InstancePage";
 import ThemeProvider from "./hooks/UseTheme";
 
 function App() {
@@ -16,7 +17,7 @@ function App() {
             <Route path="/bills" element={<></>} />
             <Route path="/credentials" element={<></>} />
             <Route path="/projects" element={<></>} />
-            <Route path="/instances" element={<></>} />
+            <Route path="/instances" element={<InstancePage />} />
             <Route path="/storage/:storageName" element={<StorageInfoPage />} />
             <Route path="/storage" element={<StoragePage />} />
             <Route path="/database" element={<></>} />

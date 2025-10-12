@@ -6,7 +6,10 @@
   --color-background: var(--bg-primary);
   --color-strong: var(--bg-strong);
   --color-inverted: var(--bg-inverted);
+
   --color-accent: var(--accent);
+  --color-accent-background: var(--accent-background);
+
   --color-button-hover: var(--button-hover);
   --color-button-active: var(--button-active);
 
@@ -22,10 +25,18 @@
   --color-surface-primary: var(--surface-primary);
   --color-warning: var(--warning);
   --color-destructive: var(--destructive);
+
+  --color-success: var(--success);
+  --color-success-background: var(--success-background);
+  --color-info: var(--info);
+  --color-info-background: var(--info-background);
+  --color-careful: var(--careful);
+  --color-careful-background: var(--careful-background);
 }
 
 [data-theme="light"] {
-  --accent: var(--color-teal-500);
+  --accent: var(--color-teal-400);
+  --accent-background: var(--color-teal-600);
   --bg-primary: #fcfcfc;
   --bg-strong: #ffffff;
   --bg-inverted: #212121;
@@ -44,10 +55,18 @@
   --surface-primary: #f9f9f9;
   --warning: #af1d27;
   --destructive: #fce9ea;
+
+  --success: var(--color-green-600);
+  --success-background: var(--color-green-200);
+  --info: var(--color-blue-600);
+  --info-background: var(--color-blue-200);
+  --careful: var(--color-yellow-600);
+  --careful-background: var(--color-yellow-200);
 }
 
 [data-theme="dark"] {
   --accent: var(--color-teal-500);
+  --accent-background: var(--color-teal-800);
   --bg-primary: #181818;
   --bg-strong: #050505;
   --bg-inverted: #fff;
@@ -66,6 +85,13 @@
   --surface-primary: #202020;
   --warning: #f4b3b7;
   --destructive: #390508;
+
+  --success: var(--color-green-200);
+  --success-background: var(--color-green-600);
+  --info: var(--color-blue-200);
+  --info-background: var(--color-blue-600);
+  --careful: var(--color-yellow-200);
+  --careful-background: var(--color-yellow-600);
 }
 
 html,

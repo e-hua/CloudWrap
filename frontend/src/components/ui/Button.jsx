@@ -21,7 +21,7 @@ export default function Button({
   children,
   variation,
   // "secondary", "default", "disabled"
-  style,
+  className = "",
   text,
   onClick,
   disabled,
@@ -32,7 +32,11 @@ export default function Button({
 
   return (
     <div
-      className={clsx(baseStyles, BUTTON_MAPPING[variation].className, style)}
+      className={clsx(
+        baseStyles,
+        BUTTON_MAPPING[variation].className,
+        className
+      )}
       onClick={onClick}
     >
       {children}

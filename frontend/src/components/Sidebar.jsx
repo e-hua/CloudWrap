@@ -34,7 +34,7 @@ export default function Sidebar() {
           Build
         </h4>
         <SidebarIcon icon={<Projects />} name="Projects" />
-        <SidebarIcon icon={<EC2 />} name="Instances" />
+        <SidebarIcon icon={<EC2 />} name="Instances" beta />
         <SidebarIcon icon={<S3 />} name="Storage" beta />
         <SidebarIcon icon={<RDS />} name="Database" />
       </div>

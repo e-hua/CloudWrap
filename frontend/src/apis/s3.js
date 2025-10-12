@@ -7,7 +7,7 @@ async function fetchBuckets(ARN = "") {
     const response = await fetch(`${s3URL}buckets/`, {
       method: "GET",
       headers: {
-        ARN: ARN,
+        ARN,
       },
     });
 
@@ -23,7 +23,7 @@ async function deleteBucket(bucketName, ARN = "") {
     const response = await fetch(`${s3URL}buckets/${bucketName}`, {
       method: "DELETE",
       headers: {
-        ARN: ARN,
+        ARN,
       },
     });
     console.log(response);
@@ -37,7 +37,7 @@ async function createBucket(bucketName, ARN = "") {
     const response = await fetch(`${s3URL}buckets/${bucketName}`, {
       method: "POST",
       headers: {
-        ARN: ARN,
+        ARN,
       },
     });
 
@@ -52,7 +52,7 @@ async function fetchObjects(bucketName, ARN = "") {
     const response = await fetch(`${s3URL}buckets/${bucketName}`, {
       method: "GET",
       headers: {
-        ARN: ARN,
+        ARN,
       },
     });
     const result = await response.json();
@@ -72,7 +72,7 @@ async function postObject(bucketName, itemName, file, path = "", ARN = "") {
       {
         method: "POST",
         headers: {
-          ARN: ARN,
+          ARN,
         },
         body: formData,
       }
@@ -91,7 +91,7 @@ async function deleteObject(bucketName, itemName, path = "", ARN = "") {
       {
         method: "DELETE",
         headers: {
-          ARN: ARN,
+          ARN,
         },
       }
     );
@@ -109,7 +109,7 @@ async function getObject(bucketName, itemName, path = "", ARN = "") {
       {
         method: "GET",
         headers: {
-          ARN: ARN,
+          ARN,
         },
       }
     );

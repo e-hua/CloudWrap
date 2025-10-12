@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import { createBucket, fetchBuckets } from "../apis/s3";
-import ServiceCard from "../components/ServiceCard";
-import AccentButton from "../components/AccentButton";
+import S3ServiceCard from "../components/S3ServiceCard";
+import AccentButton from "../components/ui/AccentButton";
 import { Plus } from "lucide-react";
-import Modal from "../components/Modal";
-import Button from "../components/Button";
+import Modal from "../components/ui/Modal";
+import Button from "../components/ui/Button";
+import Input from "../components/ui/Input";
 
 export default function StoragePage() {
   const [buckets, setBuckets] = useState([]);
@@ -51,16 +52,11 @@ export default function StoragePage() {
         <h1 className="font-semibold text-xl">Create new bucket</h1>
         <div>
           <h2 className="text-sm">Bucket name</h2>
-          <input
+          <Input
             // sync it with react state
             value={inputVal}
             // Sync react state with it
             onChange={(event) => setInputVal(event.target.value)}
-            type="text"
-            className="bg-surface-primary 
-          border-1 border-sidebar-border
-          focus:outline-none
-          p-1 rounded-md"
           />
         </div>
         <div className="flex flex-row justify-end gap-5">
@@ -83,6 +79,7 @@ export default function StoragePage() {
     <div className="flex flex-col px-[15%] w-full h-full gap-y-2">
       <div className="flex flex-row justify-between mt-1">
         <h1 className="text-text-primary text-2xl font-bold">S3 buckets</h1>
+
         <div
           onClick={() => {
             setModalOpen(true);
@@ -90,15 +87,18 @@ export default function StoragePage() {
         >
           <AccentButton icon={plusIcon} text="Add storage" />
         </div>
-        <Modal isOpen={modalOpen}>{storageSpecification}</Modal>
+        <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)}>
+          {storageSpecification}
+        </Modal>
       </div>
+
       <p className="text-text-secondary">
-        Deploy your static websites or store documents here!
+        Store and retrieve any amount of data from anywhere
       </p>
       <div className="flex flex-col gap-y-5">
         {buckets.map((elem, idx) => {
           return (
-            <ServiceCard
+            <S3ServiceCard
               serviceType="storage"
               serviceName={elem.Name}
               creationDate={elem.CreationDate}

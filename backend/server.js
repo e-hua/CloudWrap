@@ -24,5 +24,7 @@ app.use(
     credentials: true,
   })
 );
+
+app.use(express.json());
 app.use("/s3", s3Router);
 app.use("/ec2", ec2Router);

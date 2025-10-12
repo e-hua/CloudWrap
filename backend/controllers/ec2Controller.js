@@ -11,6 +11,43 @@ import {
   restartInstance,
 } from "../services/ec2Service/ec2InstanceService.js";
 
+function parseInstanceList(instances) {
+  return instances.map((instance) => {
+    const {
+      InstanceId,
+      InstanceType,
+      State,
+      Placement,
+      PublicDnsName,
+      PublicIpAddress,
+      Monitoring,
+      SecurityGroups = [],
+      KeyName,
+      LaunchTime,
+      PlatformDetails,
+      Operator,
+      NetworkInterfaces = [],
+      Tags = [],
+    } = instance;
+
+    return {
+      Name: Tags.find((entry) => entry.Key === "Name")?.Value,
+      InstanceId,
+      InstanceState: State?.Name,
+      InstanceType,
+      AvailabilityZone: Placement?.AvailabilityZone,
+      Dns: PublicDnsName,
+      Ipv4: PublicIpAddress,
+      Ipv6: NetworkInterfaces.flatMap((entry) => entry.Ipv6Addresses),
+      Monitoring: Monitoring.State,
+      SecurityGroups: SecurityGroups.map((elem) => elem.GroupName),
+      KeyName: KeyName,
+      LaunchTime: LaunchTime,
+      Platform: PlatformDetails,
+      Managed: Operator.Managed,
+    };
+  });
+}
 const router = express.Router();
 
 router.get("/instances", async (req, res) => {
@@ -20,7 +57,7 @@ router.get("/instances", async (req, res) => {
 
     const instances = await listInstances(credential);
 
-    res.status(200).send(instances);
+    res.status(200).send(parseInstanceList(instances));
   } catch (err) {
     res.status(500).json({ err: err.message });
   }
