@@ -24,7 +24,7 @@ export default function Sidebar() {
       <div>
         <div>
           <SidebarIcon icon={<Dashboard />} name="Dashboard" />
-          <SidebarIcon icon={<Bills />} name="Bills" />
+          <SidebarIcon icon={<Bills />} name="Bills" beta />
           <SidebarIcon icon={<Credentials />} name="Credentials" />
         </div>
       </div>

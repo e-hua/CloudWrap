@@ -32,6 +32,24 @@
   --color-info-background: var(--info-background);
   --color-careful: var(--careful);
   --color-careful-background: var(--careful-background);
+
+  --color-card: var(--card);
+  --color-card-border: var(--card-border);
+  --color-muted-foreground: var(--muted-foreground);
+
+  --color-chart-red: var(--chart-red);
+  --color-chart-pink: var(--chart-pink);
+  --color-chart-orange: var(--chart-orange);
+  --color-chart-yellow: var(--chart-yellow);
+  --color-chart-lime: var(--chart-lime);
+  --color-chart-green: var(--chart-green);
+  --color-chart-cyan: var(--chart-cyan);
+  --color-chart-blue: var(--chart-blue);
+  --color-chart-purple: var(--chart-purple);
+  --color-chart-brown: var(--chart-brown);
+  --color-chart-gray: var(--chart-gray);
+  --color-chart-teal: var(--chart-teal);
+  --color-chart-olive: var(--chart-olive);
 }
 
 [data-theme="light"] {
@@ -62,6 +80,24 @@
   --info-background: var(--color-blue-200);
   --careful: var(--color-yellow-600);
   --careful-background: var(--color-yellow-200);
+
+  --card: oklch(100% 0 0);
+  --card-border: oklch(92.2% 0 0);
+  --muted-foreground: oklch(55.6% 0 0);
+
+  --chart-red: rgba(240, 75, 50, 0.9); /* strong red */
+  --chart-pink: rgba(255, 105, 180, 0.9); /* bright pink */
+  --chart-orange: rgba(255, 128, 66, 0.9); /* orange */
+  --chart-yellow: rgba(255, 198, 88, 0.9); /* yellow */
+  --chart-lime: rgba(164, 222, 108, 0.9); /* lime green */
+  --chart-green: rgba(130, 202, 157, 0.9); /* medium green */
+  --chart-cyan: rgba(141, 209, 225, 0.9); /* cyan */
+  --chart-blue: rgba(66, 134, 244, 0.9); /* medium blue */
+  --chart-purple: rgba(136, 132, 216, 0.9); /* purple */
+  --chart-brown: rgba(130, 50, 20, 0.9); /* brown */
+  --chart-gray: rgba(110, 110, 110, 0.9); /* gray */
+  --chart-teal: rgba(0, 150, 150, 0.9); /* teal */
+  --chart-olive: rgba(128, 128, 0, 0.9); /* olive */
 }
 
 [data-theme="dark"] {
@@ -92,6 +128,25 @@
   --info-background: var(--color-blue-600);
   --careful: var(--color-yellow-200);
   --careful-background: var(--color-yellow-600);
+
+  --card: oklch(20.5% 0 0);
+  --card-border: oklch(100% 0 0 / 0.1);
+  --muted-foreground: oklch(70.8% 0 0);
+
+  /* Dark theme chart colors */
+  --chart-red: rgba(255, 100, 80, 0.9); /* slightly brighter red */
+  --chart-pink: rgba(255, 130, 200, 0.9); /* bright pink */
+  --chart-orange: rgba(255, 160, 100, 0.9); /* orange */
+  --chart-yellow: rgba(255, 220, 120, 0.9); /* yellow */
+  --chart-lime: rgba(180, 240, 140, 0.9); /* lime green */
+  --chart-green: rgba(150, 230, 180, 0.9); /* medium green */
+  --chart-cyan: rgba(150, 230, 245, 0.9); /* cyan */
+  --chart-blue: rgba(100, 170, 255, 0.9); /* medium blue */
+  --chart-purple: rgba(180, 170, 240, 0.9); /* purple */
+  --chart-brown: rgba(180, 100, 60, 0.9); /* brown */
+  --chart-gray: rgba(180, 180, 180, 0.9); /* gray */
+  --chart-teal: rgba(0, 200, 200, 0.9); /* teal */
+  --chart-olive: rgba(180, 180, 80, 0.9); /* olive */
 }
 
 html,
@@ -119,5 +174,10 @@ h6 {
 @layer utilities {
   .disabled {
     opacity: 0.5;
+  }
+
+  .rechart-wrapper svg:focus,
+  .rechart-wrapper g:focus {
+    outline: none !important;
   }
 }

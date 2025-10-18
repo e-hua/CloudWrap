@@ -6,6 +6,7 @@ import StoragePage from "./pages/StoragePage";
 import StorageInfoPage from "./pages/StorageInfoPage";
 import InstancePage from "./pages/InstancePage";
 import ThemeProvider from "./hooks/UseTheme";
+import CostDashboardPage from "./pages/CostDashboardPage";
 
 function App() {
   return (
@@ -14,7 +15,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Layout />}>
             <Route path="/dashboard" element={<></>} />
-            <Route path="/bills" element={<></>} />
+            <Route path="/bills" element={<CostDashboardPage />} />
             <Route path="/credentials" element={<></>} />
             <Route path="/projects" element={<></>} />
             <Route path="/instances" element={<InstancePage />} />

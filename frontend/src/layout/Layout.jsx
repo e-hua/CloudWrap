@@ -8,7 +8,7 @@ export default function Layout() {
       <Sidebar />
       <div className="flex-col align-middle ml-60 h-full w-full">
         {/* A sticky topbar just like Render */}
-        <div className="border-b border-sidebar-border sticky top-0 bg-background p-2">
+        <div className="flex justify-start border-b border-sidebar-border sticky top-0 bg-background p-2">
           <ThemeToggle />
         </div>
         {/* Outlet is like its "children" props*/}
