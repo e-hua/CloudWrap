@@ -1,8 +1,11 @@
 import fs from "fs/promises";
 import path from "path";
 
-class FileCache {
-  constructor(dirName, ttlInMs) {
+class FileCache<T> {
+  private dirPath: string;
+  private ttlInMs: number;
+
+  constructor(dirName: string, ttlInMs: number) {
     // We resolve where the cache folder will be
     this.dirPath = path.resolve(`.cache/${dirName}`);
     // We keep track of what's the expected time to live for the file
@@ -14,11 +17,11 @@ class FileCache {
     await fs.mkdir(this.dirPath, { recursive: true });
   }
 
-  #getKeyPath(key) {
+  #getKeyPath(key: string) {
     return path.join(this.dirPath, `${key}.json`);
   }
 
-  async put(key, val) {
+  async put(key: string, val: T) {
     // get the path to the cache file we're building
     const keyPath = this.#getKeyPath(key);
     const keyString = JSON.stringify(val);
@@ -29,7 +32,7 @@ class FileCache {
     await fs.rename(keyPath + ".tmp", keyPath);
   }
 
-  async get(key) {
+  async get(key: string) {
     try {
       const keyPath = this.#getKeyPath(key);
       const stat = await fs.stat(keyPath);

@@ -4,12 +4,12 @@ import {
   CreateBucketCommand,
   DeleteBucketCommand,
 } from "@aws-sdk/client-s3";
+import type { StrictCredentials } from "@/services/assumeRoleService.js";
+import { STRICT_AWS_REGION as strictRegion } from "@/config/aws.config.js";
 
-const region = process.env.AWS_REGION;
-
-export async function listBuckets(credential) {
+export async function listBuckets(credential: StrictCredentials) {
   const client = new S3Client({
-    region: region,
+    region: strictRegion,
     credentials: {
       accessKeyId: credential.AccessKeyId,
       secretAccessKey: credential.SecretAccessKey,
@@ -21,9 +21,12 @@ export async function listBuckets(credential) {
   return buckets;
 }
 
-export async function addBucket(credential, newBucketName) {
+export async function addBucket(
+  credential: StrictCredentials,
+  newBucketName: string
+) {
   const client = new S3Client({
-    region: region,
+    region: strictRegion,
     credentials: {
       accessKeyId: credential.AccessKeyId,
       secretAccessKey: credential.SecretAccessKey,
@@ -34,7 +37,7 @@ export async function addBucket(credential, newBucketName) {
   const input = {
     Bucket: newBucketName,
     CreateBucketConfiguration: {
-      LocationConstraint: region,
+      LocationConstraint: strictRegion,
     },
   };
 
@@ -42,9 +45,12 @@ export async function addBucket(credential, newBucketName) {
   await client.send(command);
 }
 
-export async function deleteBucket(credential, targetBucketName) {
+export async function deleteBucket(
+  credential: StrictCredentials,
+  targetBucketName: string
+) {
   const client = new S3Client({
-    region: region,
+    region: strictRegion,
     credentials: {
       accessKeyId: credential.AccessKeyId,
       secretAccessKey: credential.SecretAccessKey,

@@ -1,11 +1,18 @@
 import {
   CostExplorerClient,
   GetCostAndUsageCommand,
+  Granularity,
+  type Expression,
+  type ResultByTime,
 } from "@aws-sdk/client-cost-explorer";
+import type { StrictCredentials } from "@/services/assumeRoleService.js";
+import { STRICT_AWS_REGION as region } from "@/config/aws.config.js";
 
-const region = process.env.AWS_REGION;
+type FilterOptions = {
+  recordTypes: string[];
+};
 
-function createCostExplorerClient(credential) {
+function createCostExplorerClient(credential: StrictCredentials) {
   return new CostExplorerClient({
     region: region,
     credentials: {
@@ -16,7 +23,7 @@ function createCostExplorerClient(credential) {
   });
 }
 
-function getTimePeriod(granularity) {
+function getTimePeriod(granularity: Granularity) {
   // "DAILY" || "MONTHLY" || "HOURLY"
   let currDate = new Date();
   let startDate = new Date(currDate);
@@ -42,28 +49,15 @@ function getTimePeriod(granularity) {
   };
 }
 
-function buildFilter(filterOptions = {}) {
-  const filters = [];
+function buildFilter(filterOptions: FilterOptions): Expression | undefined {
+  const filters: Expression[] = [];
 
   // RECORD_TYPE ["Usage", "Credit", "Refund"...]
-  if (filterOptions.recordTypes && filterOptions.recordTypes.length > 0) {
+  if (filterOptions.recordTypes.length > 0) {
     filters.push({
       Dimensions: {
         Key: "RECORD_TYPE",
         Values: filterOptions.recordTypes,
-      },
-    });
-  }
-
-  // SERVICE [
-  // "Amazon Elastic Compute Cloud - Compute",
-  // "Amazon Simple Storage Service"
-  // ]
-  if (filterOptions.services && filterOptions.services.length > 0) {
-    filters.push({
-      Dimensions: {
-        Key: "SERVICE",
-        Values: filterOptions.services,
       },
     });
   }
@@ -73,7 +67,11 @@ function buildFilter(filterOptions = {}) {
   return { And: filters };
 }
 
-async function getCostAndUsage(credential, granularity, filterOptions = {}) {
+async function getCostAndUsage(
+  credential: StrictCredentials,
+  granularity: Granularity,
+  filterOptions: FilterOptions
+): Promise<ResultByTime[]> {
   const client = createCostExplorerClient(credential);
 
   const command = new GetCostAndUsageCommand({
@@ -85,7 +83,11 @@ async function getCostAndUsage(credential, granularity, filterOptions = {}) {
   });
 
   const response = await client.send(command);
-  return response.ResultsByTime;
+  const resultsByTime = response.ResultsByTime;
+  if (!resultsByTime) {
+    throw new Error("No results from AWS");
+  }
+  return resultsByTime;
 }
 
 export { getCostAndUsage };

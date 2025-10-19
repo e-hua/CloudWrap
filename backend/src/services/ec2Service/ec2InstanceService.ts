@@ -6,9 +6,14 @@ import {
   StartInstancesCommand,
   TerminateInstancesCommand,
   RebootInstancesCommand,
+  _InstanceType,
+  ResourceType,
 } from "@aws-sdk/client-ec2";
 
-const region = process.env.AWS_REGION;
+import { STRICT_AWS_REGION as region } from "@/config/aws.config.js";
+import type { StrictCredentials } from "@/services/assumeRoleService.js";
+
+type ValidInstanceType = (typeof _InstanceType)[keyof typeof _InstanceType];
 
 const AMIMapping = {
   // Canonical, Ubuntu, 24.04, amd64 noble image
@@ -17,7 +22,7 @@ const AMIMapping = {
   Windows: "ami-066eb5725566530f0",
 };
 
-function createEC2Client(credential) {
+function createEC2Client(credential: StrictCredentials) {
   return new EC2Client({
     region: region,
     credentials: {
@@ -28,7 +33,7 @@ function createEC2Client(credential) {
   });
 }
 
-export async function listInstances(credential) {
+export async function listInstances(credential: StrictCredentials) {
   const client = createEC2Client(credential);
 
   const instances = await client.send(new DescribeInstancesCommand({}));
@@ -36,22 +41,36 @@ export async function listInstances(credential) {
 }
 
 export async function launchInstance(
-  credential,
-  instanceName,
-  instanceImage = "Linux",
-  instanceType = "t3.micro"
+  credential: StrictCredentials,
+  instanceName: string,
+  instanceImage: string = "Linux",
+  instanceType: string = "t3.micro"
 ) {
+  if (!(instanceImage in AMIMapping)) {
+    throw new Error(
+      `Instance image ${instanceImage} is not supported yet, 
+      current supported version ${AMIMapping}`
+    );
+  }
+
+  if (!(instanceType in _InstanceType)) {
+    throw new Error(
+      `Instance type ${instanceType} is not supported yet, 
+      current supported version ${_InstanceType}`
+    );
+  }
+
   const client = createEC2Client(credential);
 
   const input = {
-    ImageId: AMIMapping[instanceImage],
-    InstanceType: instanceType,
+    ImageId: AMIMapping[instanceImage as keyof typeof AMIMapping],
+    InstanceType: instanceType as ValidInstanceType,
     MaxCount: 1,
     MinCount: 1,
 
     TagSpecifications: [
       {
-        ResourceType: "instance",
+        ResourceType: "instance" as ResourceType,
         Tags: [{ Key: "Name", Value: instanceName }],
       },
     ],
@@ -62,7 +81,10 @@ export async function launchInstance(
   return response;
 }
 
-export async function stopInstance(credential, instanceId) {
+export async function stopInstance(
+  credential: StrictCredentials,
+  instanceId: string
+) {
   const client = createEC2Client(credential);
   const command = new StopInstancesCommand({
     InstanceIds: [instanceId],
@@ -72,7 +94,10 @@ export async function stopInstance(credential, instanceId) {
   return response;
 }
 
-export async function startInstance(credential, instanceId) {
+export async function startInstance(
+  credential: StrictCredentials,
+  instanceId: string
+) {
   const client = createEC2Client(credential);
   const command = new StartInstancesCommand({
     InstanceIds: [instanceId],
@@ -82,7 +107,10 @@ export async function startInstance(credential, instanceId) {
   return response;
 }
 
-export async function terminateInstance(credential, instanceId) {
+export async function terminateInstance(
+  credential: StrictCredentials,
+  instanceId: string
+) {
   const client = createEC2Client(credential);
   const command = new TerminateInstancesCommand({
     InstanceIds: [instanceId],
@@ -92,7 +120,10 @@ export async function terminateInstance(credential, instanceId) {
   return response;
 }
 
-export async function restartInstance(credential, instanceId) {
+export async function restartInstance(
+  credential: StrictCredentials,
+  instanceId: string
+) {
   const client = createEC2Client(credential);
   const command = new RebootInstancesCommand({
     InstanceIds: [instanceId],

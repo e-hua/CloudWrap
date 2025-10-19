@@ -5,10 +5,13 @@ import {
   DeleteObjectCommand,
   GetObjectCommand,
 } from "@aws-sdk/client-s3";
+import type { StrictCredentials } from "@/services/assumeRoleService.js";
+import { STRICT_AWS_REGION as region } from "@/config/aws.config.js";
 
-const region = process.env.AWS_REGION;
-
-export async function listObjects(credential, bucketName) {
+export async function listObjects(
+  credential: StrictCredentials,
+  bucketName: string
+) {
   const client = new S3Client({
     region: region,
     credentials: {
@@ -29,11 +32,11 @@ export async function listObjects(credential, bucketName) {
 }
 
 export async function putObject(
-  credential,
-  bucketName,
-  key,
-  content,
-  contentType
+  credential: StrictCredentials,
+  bucketName: string,
+  key: string,
+  content: Buffer<ArrayBufferLike>,
+  contentType: string
 ) {
   const client = new S3Client({
     region: region,
@@ -55,7 +58,11 @@ export async function putObject(
   await client.send(command);
 }
 
-export async function deleteObject(credential, bucketName, key) {
+export async function deleteObject(
+  credential: StrictCredentials,
+  bucketName: string,
+  key: string
+) {
   const client = new S3Client({
     region: region,
     credentials: {
@@ -75,7 +82,11 @@ export async function deleteObject(credential, bucketName, key) {
   return response;
 }
 
-export async function getObject(credential, bucketName, key) {
+export async function getObject(
+  credential: StrictCredentials,
+  bucketName: string,
+  key: string
+) {
   const client = new S3Client({
     region: region,
     credentials: {
@@ -92,6 +103,9 @@ export async function getObject(credential, bucketName, key) {
 
   const command = new GetObjectCommand(input);
   const body = (await client.send(command)).Body;
+  if (!body) {
+    throw new Error("The object we're trying to get does not exist");
+  }
   const response = await body.transformToByteArray();
   return response;
 }
