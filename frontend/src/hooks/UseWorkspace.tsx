@@ -4,12 +4,14 @@ import { useContext, createContext, useState, useEffect } from "react";
 
 // Step 1: creating a context
 const WorkspaceContext = createContext("");
-const WorkspaceContextSetter = createContext((value) => {}); // Just a dummy initailization of contexts
+const WorkspaceContextSetter = createContext<(value: string) => void>((val) => {
+  console.log(val);
+}); // Just a dummy initailization of contexts
 
-export function WorkspaceProvider({ children }) {
+export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
   // Use lazy function to prevent re-run this on every render
   const [workspace, setWorkspace] = useState(() => {
-    return Cookies.get("workspace") || "Storage";
+    return Cookies.get("workspace") || "Landing";
   });
 
   // Update the cookies everytime we update its state

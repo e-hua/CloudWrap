@@ -28,7 +28,7 @@ export async function listObjects(
   const command = new ListObjectsV2Command(input);
   const response = await client.send(command);
 
-  return response;
+  return response.Contents;
 }
 
 export async function putObject(

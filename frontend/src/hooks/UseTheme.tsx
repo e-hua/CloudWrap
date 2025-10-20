@@ -3,9 +3,15 @@ import React from "react";
 import Cookies from "js-cookie";
 
 const ThemeContext = createContext("dark");
-const ThemeSetterContext = createContext((val) => {});
+const ThemeSetterContext = createContext((val: string) => {
+  console.log(val);
+});
 
-export default function ThemeProvider({ children }) {
+export default function ThemeProvider({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const [currentState, setCurrentState] = useState(() => {
     return Cookies.get("theme") || "light";
   });

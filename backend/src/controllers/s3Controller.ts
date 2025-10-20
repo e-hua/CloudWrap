@@ -38,7 +38,6 @@ router.get("/buckets", async (req, res) => {
 // Add buckets
 router.post("/buckets/:bucketName", async (req, res) => {
   try {
-    const ARN = req.headers.ARN || process.env.USER_ROLE_ARN;
     const { bucketName } = req.params;
 
     const credential = await assumeRole();
