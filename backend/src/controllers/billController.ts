@@ -16,7 +16,10 @@ function isValidGranularity(val: string): val is Granularity {
 }
 
 // 24h for time to live
-const costCache = new FileCache<ResultByTime[]>("cost", 24 * 60 * 60 * 1000);
+const costCache = new FileCache<ResultByTime[]>(
+  "cost",
+  2 * 24 * 60 * 60 * 1000
+);
 await costCache.init();
 
 const router = express.Router();
