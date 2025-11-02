@@ -3,7 +3,7 @@ import fs from "fs/promises";
 import mime from "mime-types";
 import { putObject } from "@/services/s3Services/s3ObjectService.js";
 import type { StrictCredentials } from "@/services/assumeRoleService.js";
-import type { StreamData } from "./staticWebsite-deploy.js";
+import type { StreamData } from "../runTofu.js";
 
 type UploadDirToS3Type = {
   projectPath: string;
