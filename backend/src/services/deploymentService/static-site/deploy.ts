@@ -17,6 +17,14 @@ const __dirname = path.dirname(__filename);
 type DeployStaticSiteInput = {
   projectName: string;
   siteBucketName: string;
+
+  githubRepoId: string;
+  githubBranchName: string;
+  githubConnectionArn: string;
+  rootDirectory?: string;
+  buildCommand?: string;
+  publishDirectory?: string;
+
   domainName?: string;
   acmCertificateArn?: string;
 };
@@ -84,8 +92,12 @@ async function deployStaticSite(
       "apply",
       "-auto-approve",
       `-var=bucket_name=${inputs.siteBucketName}`,
+      `-var=project_name=${inputs.projectName}`,
       `-var=execution_role_arn=${tf_role_arn}`,
       `-var=aws_region=${region}`,
+      `-var=github_repo_id=${inputs.githubRepoId}`,
+      `-var=github_branch_name=${inputs.githubBranchName}`,
+      `-var=github_connection_arn=${inputs.githubConnectionArn}`,
     ];
 
     if (inputs.domainName) {
@@ -94,6 +106,16 @@ async function deployStaticSite(
 
     if (inputs.acmCertificateArn) {
       applyArgs.push(`-var=acm_certificate_arn=${inputs.acmCertificateArn}`);
+    }
+
+    if (inputs.rootDirectory) {
+      applyArgs.push(`-var=root_directory=${inputs.rootDirectory}`);
+    }
+    if (inputs.buildCommand) {
+      applyArgs.push(`-var=build_command=${inputs.buildCommand}`);
+    }
+    if (inputs.publishDirectory) {
+      applyArgs.push(`-var=publish_directory=${inputs.publishDirectory}`);
     }
 
     // Run tofu apply command

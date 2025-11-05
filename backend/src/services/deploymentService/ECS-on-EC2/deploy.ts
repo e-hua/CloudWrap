@@ -36,6 +36,7 @@ async function deployECS(
     "..",
     "templates",
     "opentofu",
+    "server",
     "ECS-on-EC2"
   );
 

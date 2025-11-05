@@ -1,9 +1,9 @@
 import express from "express";
-import { deployStaticSite } from "@/services/deploymentService/staticWebsite/deploy.js";
-import type { DeployStaticSiteInput } from "@/services/deploymentService/staticWebsite/deploy.js";
+import { deployStaticSite } from "@/services/deploymentService/static-site/deploy.js";
+import type { DeployStaticSiteInput } from "@/services/deploymentService/static-site/deploy.js";
 import { getErrorMessage } from "@/utils/errors.js";
 import { assumeRole } from "@/services/assumeRoleService.js";
-import { uploadDirToS3 } from "@/services/deploymentService/staticWebsite/upload.js";
+import { uploadDirToS3 } from "@/services/deploymentService/static-site/upload.js";
 import {
   deployECS,
   type DeployECSInput,

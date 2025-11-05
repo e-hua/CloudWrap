@@ -1,5 +1,4 @@
 import { spawn } from "child_process";
-import path from "path";
 
 type StreamData = {
   source: "stdout" | "stderr" | "sys-info" | "sys-failure";
