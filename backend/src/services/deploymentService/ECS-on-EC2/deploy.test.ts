@@ -4,10 +4,15 @@ async function main() {
   console.log("--- STARTING ECS ON EC2 DEPLOYMENT ---");
 
   const testInputs = {
-    projectName: `cloudwrap-ecs-test-nginx`,
-    image_uri: "nginx:latest",
-    container_port: 80,
+    projectName: `cloudwrap-ecs-test-node-app`,
+    // This port number must match the port number we exposed in the Dockerfile
+    container_port: 3030,
     instance_type: "t3.nano",
+
+    githubRepoId: "e-hua/ECS-test-docker",
+    githubBranchName: "main",
+    githubConnectionArn:
+      "arn:aws:codestar-connections:us-east-2:276291856310:connection/e7b8cd7c-295f-4776-9f93-4356f180edd6",
   };
 
   try {

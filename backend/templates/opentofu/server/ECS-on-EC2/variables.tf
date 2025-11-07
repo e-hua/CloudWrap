@@ -17,7 +17,9 @@ variable "execution_role_arn" {
 
 variable "image_uri" {
   type        = string
-  description = "The container image from ECR to deploy."
+  description = "The dummy container image from ECR to trigger the first deploy."
+  # It will deployed in the initial deployment, so it's ok to make it any valid URI
+  default = "nginx:latest"
 }
 
 variable "container_port" {
@@ -35,4 +37,31 @@ variable "secret_header_value" {
   type        = string
   description = "A secret value for the X-CloudWrap-Secret header."
   sensitive   = true
+}
+
+variable "github_repo_id" {
+  type        = string
+  description = "The repository ID (e.g., 'e-hua/CloudWrap')."
+}
+
+variable "github_branch_name" {
+  type        = string
+  description = "The branch name (e.g., 'dev' or 'main')."
+}
+
+variable "github_connection_arn" {
+  type        = string
+  description = "The ARN of the CodeStar connection."
+}
+
+variable "root_directory" {
+  type        = string
+  description = "The directory to run commands from. Defaults to repo root."
+  default     = "."
+}
+
+variable "dockerfile_path" {
+  type        = string
+  description = "Path to the Dockerfile, relative to the root_directory"
+  default     = "Dockerfile"
 }

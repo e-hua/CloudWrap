@@ -26,6 +26,10 @@ resource "aws_ecs_service" "main" {
   launch_type     = "EC2"
   desired_count   = 1
 
+  # Force ECS to stop the old task before starting the new one
+  deployment_maximum_percent         = 100 # Do not run more than 1 task
+  deployment_minimum_healthy_percent = 0   # Allow the service to drop to 0 tasks briefly
+
   # Connect this service to our Load Balancer
   depends_on = [aws_instance.ecs_instance]
 }

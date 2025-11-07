@@ -15,9 +15,15 @@ import { getErrorMessage } from "@/utils/errors.js";
 
 type DeployECSInput = {
   projectName: string;
-  image_uri: string;
   container_port: number;
+
+  githubRepoId: string;
+  githubBranchName: string;
+  githubConnectionArn: string;
+
   instance_type?: string;
+  rootDirectory?: string;
+  dockerfile_path?: string;
 };
 
 import { fileURLToPath } from "url";
@@ -88,11 +94,25 @@ async function deployECS(
       `-var=aws_region=${region}`,
       `-var=project_name=${inputs.projectName}`,
       `-var=execution_role_arn=${tf_role_arn}`,
-      `-var=image_uri=${inputs.image_uri}`,
       `-var=container_port=${inputs.container_port}`,
-      `-var=instance_type=${inputs.instance_type}`,
       `-var=secret_header_value=${generatedSecret}`,
+
+      `-var=github_repo_id=${inputs.githubRepoId}`,
+      `-var=github_branch_name=${inputs.githubBranchName}`,
+      `-var=github_connection_arn=${inputs.githubConnectionArn}`,
     ];
+
+    if (inputs.instance_type) {
+      applyArgs.push(`-var=instance_type=${inputs.instance_type}`);
+    }
+
+    if (inputs.rootDirectory) {
+      applyArgs.push(`-var=root_directory=${inputs.rootDirectory}`);
+    }
+
+    if (inputs.dockerfile_path) {
+      applyArgs.push(`-var=dockerfile_path=${inputs.dockerfile_path}`);
+    }
 
     // Run tofu apply command
     await runTofu({
