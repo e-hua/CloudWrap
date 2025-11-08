@@ -1,5 +1,5 @@
 import { assumeRole } from "@/services/assumeRoleService.js";
-import { deployStaticSite } from "./deploy.js";
+import { createStaticSite } from "./create.js";
 import { manualDeploy } from "./trigger-deployment.js";
 
 async function main() {
@@ -27,7 +27,7 @@ async function main() {
   try {
     const logCallback = (elem: any) => console.log(elem.data);
 
-    await deployStaticSite(testInputs, logCallback);
+    await createStaticSite(testInputs, logCallback);
     // Manually trigger works
     // const credential = await assumeRole();
     // await manualDeploy(credential, testInputs.projectName);

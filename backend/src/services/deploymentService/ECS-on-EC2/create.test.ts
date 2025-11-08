@@ -1,4 +1,4 @@
-import { deployECS } from "./deploy.js";
+import { createECS } from "./create.js";
 
 async function main() {
   console.log("--- STARTING ECS ON EC2 DEPLOYMENT ---");
@@ -18,7 +18,7 @@ async function main() {
   try {
     const logCallback = (elem: any) => console.log(elem.data);
 
-    await deployECS(testInputs, logCallback);
+    await createECS(testInputs, logCallback);
 
     console.log("\n--- TEST DEPLOYMENT SUCCEEDED ---");
     console.log("Your ECS service is now running on an EC2 instance!");

@@ -1,9 +1,7 @@
-import path from "path";
 import { mkdtemp, rm } from "fs/promises";
 import { tmpdir } from "os";
 import { copy } from "fs-extra";
-import { randomBytes } from "crypto";
-import { runTofu, type StreamData } from "../runTofu.js";
+import path from "path";
 import {
   STRICT_TF_STATE_BUCKET as state_bucket_name,
   STRICT_AWS_REGION as region,
@@ -11,27 +9,31 @@ import {
 } from "@/config/aws.config.js";
 import { getErrorMessage } from "@/utils/errors.js";
 
-// This creates a 64-character-long, highly random hex string
+import { fileURLToPath } from "url";
+import { runTofu, type StreamData } from "../runTofu.js";
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-type DeployECSInput = {
+type CreateStaticSiteInput = {
   projectName: string;
-  container_port: number;
+  siteBucketName: string;
 
   githubRepoId: string;
   githubBranchName: string;
   githubConnectionArn: string;
-
-  instance_type?: string;
   rootDirectory?: string;
-  dockerfile_path?: string;
+  buildCommand?: string;
+  publishDirectory?: string;
+
+  domainName?: string;
+  acmCertificateArn?: string;
 };
 
-import { fileURLToPath } from "url";
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+// This funciton create a new temporary directory
+// runs 'tofu init' 'tofu apply' in them
 
-async function deployECS(
-  inputs: DeployECSInput,
+async function createStaticSite(
+  inputs: CreateStaticSiteInput,
   onStreamCallback: (data: StreamData) => void
 ): Promise<void> {
   const templatePath = path.join(
@@ -42,14 +44,12 @@ async function deployECS(
     "..",
     "templates",
     "opentofu",
-    "server",
-    "ECS-on-EC2"
+    "static-site"
   );
 
   // Using temporary folder to carry out the deployment
   // E.g. final directory path: '/tmp/cloudwrap-deployment-aB1xZ2'
   const tempDir = await mkdtemp(path.join(tmpdir(), "cloudwrap-deployment-"));
-  const generatedSecret = randomBytes(32).toString("hex");
 
   try {
     await copy(templatePath, tempDir);
@@ -91,27 +91,31 @@ async function deployECS(
     const applyArgs = [
       "apply",
       "-auto-approve",
-      `-var=aws_region=${region}`,
+      `-var=bucket_name=${inputs.siteBucketName}`,
       `-var=project_name=${inputs.projectName}`,
       `-var=execution_role_arn=${tf_role_arn}`,
-      `-var=container_port=${inputs.container_port}`,
-      `-var=secret_header_value=${generatedSecret}`,
-
+      `-var=aws_region=${region}`,
       `-var=github_repo_id=${inputs.githubRepoId}`,
       `-var=github_branch_name=${inputs.githubBranchName}`,
       `-var=github_connection_arn=${inputs.githubConnectionArn}`,
     ];
 
-    if (inputs.instance_type) {
-      applyArgs.push(`-var=instance_type=${inputs.instance_type}`);
+    if (inputs.domainName) {
+      applyArgs.push(`-var=domain_name=${inputs.domainName}`);
+    }
+
+    if (inputs.acmCertificateArn) {
+      applyArgs.push(`-var=acm_certificate_arn=${inputs.acmCertificateArn}`);
     }
 
     if (inputs.rootDirectory) {
       applyArgs.push(`-var=root_directory=${inputs.rootDirectory}`);
     }
-
-    if (inputs.dockerfile_path) {
-      applyArgs.push(`-var=dockerfile_path=${inputs.dockerfile_path}`);
+    if (inputs.buildCommand) {
+      applyArgs.push(`-var=build_command=${inputs.buildCommand}`);
+    }
+    if (inputs.publishDirectory) {
+      applyArgs.push(`-var=publish_directory=${inputs.publishDirectory}`);
     }
 
     // Run tofu apply command
@@ -132,5 +136,5 @@ async function deployECS(
   }
 }
 
-export { deployECS };
-export type { DeployECSInput };
+export { createStaticSite };
+export type { CreateStaticSiteInput };
