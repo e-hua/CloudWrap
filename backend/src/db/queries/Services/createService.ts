@@ -28,7 +28,7 @@ function initServiceCreator(db: DataBaseType) {
     const createSiteTransaction: Transaction<(input: SiteInput) => bigint | number> =
         db.transaction((input: SiteInput) => {
             const {name, type, group_id, region, repoId, branchName, rootDir,
-                siteBucketName, buildCommand, publishDir, domainName, acmCertificateARN} = input
+                siteBucketName, buildCommand, publishDirectory, domainName, acmCertificateARN} = input
             const serviceInsertionRunResult = insertServiceStmt.run({
                 name,
                 type,
@@ -44,7 +44,7 @@ function initServiceCreator(db: DataBaseType) {
                 service_id,
                 siteBucketName,
                 buildCommand,
-                publishDirectory: publishDir,
+                publishDirectory,
                 domainName: domainName || null,
                 acmCertificateARN: acmCertificateARN || null
             })

@@ -17,6 +17,7 @@ import {
   GetLogEventsCommand,
   type GetLogEventsCommandOutput,
 } from "@aws-sdk/client-cloudwatch-logs";
+import {sleep} from "@/utils/sleep.js";
 
 function createPipeLineClient(credential: StrictCredentials) {
   return new CodePipelineClient({
@@ -67,9 +68,6 @@ type BuildingLogData =
       source: "build-status" | "build-logs" | "sys-failure" | "sys-info";
     };
 
-function sleep(ms: number) {
-  return new Promise((res) => setTimeout(res, ms));
-}
 
 // Keeps sending all the statuses in the pipeline
 // Until the pipeline is finished running

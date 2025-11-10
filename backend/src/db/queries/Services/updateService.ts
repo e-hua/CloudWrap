@@ -42,10 +42,10 @@ function initServiceUpdater(db: DataBaseType) {
     const updateSiteStmt = db.prepare(updateSite)
     const updateServerStmt = db.prepare(updateServer)
 
-    const updateSiteTransaction : Transaction<(service_id: number, input: Omit<SiteInput, "type">) => bigint | number> =
-        db.transaction((service_id: number, input: Omit<SiteInput, "type">) => {
+    const updateSiteTransaction : Transaction<(service_id: number | bigint, input: Omit<SiteInput, "type">) => bigint | number> =
+        db.transaction((service_id: number | bigint, input: Omit<SiteInput, "type">) => {
             const {name, group_id, region, repoId, branchName, rootDir,
-                siteBucketName, buildCommand, publishDir, domainName, acmCertificateARN} = input
+                siteBucketName, buildCommand, publishDirectory, domainName, acmCertificateARN} = input
 
             updateServiceStmt.run({
                 id: service_id,
@@ -61,7 +61,7 @@ function initServiceUpdater(db: DataBaseType) {
                 service_id,
                 siteBucketName,
                 buildCommand,
-                publishDirectory: publishDir,
+                publishDirectory,
                 domainName: domainName || null,
                 acmCertificateARN: acmCertificateARN || null
             })
@@ -69,8 +69,8 @@ function initServiceUpdater(db: DataBaseType) {
             return service_id
         })
 
-    const updateServerTransaction: Transaction<(service_id: number, input: Omit<ServerInput, "type">) => bigint | number> =
-        db.transaction((service_id: number, input: Omit<ServerInput, "type">)  => {
+    const updateServerTransaction: Transaction<(service_id: number | bigint, input: Omit<ServerInput, "type">) => bigint | number> =
+        db.transaction((service_id: number | bigint, input: Omit<ServerInput, "type">)  => {
             const {name, group_id, region, repoId, branchName, rootDir,
                 containerPort, instanceType, dockerfilePath, secretHeaderValue} = input
 

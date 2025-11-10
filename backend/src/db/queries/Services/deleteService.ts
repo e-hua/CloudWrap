@@ -32,8 +32,8 @@ function initServiceDeleter(db: DataBaseType) {
     const deleteServerStmt = db.prepare(deleteServer)
     const deleteSiteStmt = db.prepare(deleteSite)
 
-    const deleteServiceTransaction: Transaction<(id: number) => bigint | number> =
-        db.transaction((id: number) => {
+    const deleteServiceTransaction: Transaction<(id: number | bigint) => bigint | number> =
+        db.transaction((id: number | bigint) => {
             const serviceType = typeStmt.get(id) as { type: string } | undefined
 
             if (!serviceType) {

@@ -74,12 +74,14 @@ function createTables(db: DataBaseType) {
 function createTriggers(db: DataBaseType) {
   // language=SQLite
   const create_services_updated_at = `
-    CREATE TRIGGER IF NOT EXISTS t_services_updated_at 
-    AFTER UPDATE ON Services
+    CREATE TRIGGER IF NOT EXISTS t_services_updated_at
     -- This is to prevent the infinite loop
-      
+
     -- This will only be triggered 
     -- when we're not updating the updatedAt column
+    AFTER UPDATE 
+        OF name, type, group_id, region, repoId, branchName, rootDir 
+        ON Services
     WHEN old.updatedAt = new.updatedAt
     BEGIN 
         UPDATE Services
@@ -94,6 +96,7 @@ function createTriggers(db: DataBaseType) {
 createTables(db)
 createTriggers(db)
 
+// Inject the dependencies
 const serviceCreator = initServiceCreator(db)
 const serviceReader = initServiceReader(db)
 const serviceUpdater = initServiceUpdater(db)

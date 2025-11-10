@@ -1,29 +1,5 @@
 import type {Database as DataBaseType} from "better-sqlite3"
-
-type ServiceQueryFilter = {
-    names: string[];
-    types: string[];
-    groupIds: number[];
-    regions: string[];
-    createdBefore?: Date;
-    createdAfter?: Date;
-    updatedBefore?: Date;
-    updatedAfter?: Date;
-}
-
-type ServiceWithType = {
-    type: string
-}
-
-function isServiceWithType(obj: unknown): obj is ServiceWithType{
-    return (
-        typeof obj === 'object' &&
-        obj !== null &&
-        'type' in obj &&
-        typeof (obj as any).type === 'string'
-    )
-}
-
+import type {SiteType, ServerType, ServiceType, ServiceQueryFilter} from "@/db/queries/Services/Services.types.js";
 // language=SQLite
 const getServiceTypeQuery= `
         SELECT type 
@@ -52,24 +28,26 @@ function initServiceReader(db: DataBaseType) {
     const siteStmt = db.prepare(getStaticSiteQuery)
     const serverStmt = db.prepare(getServerQuery)
 
-    function readServiceById(serviceId: number) {
+    function readServiceById(serviceId: number | bigint): ServerType | SiteType {
         const serviceType = typeStmt.get(serviceId)
 
-        if (!isServiceWithType(serviceType)) {
+        const assertedServiceWithType = serviceType as {type: string}
+
+        if (!assertedServiceWithType || !assertedServiceWithType.type) {
             throw new Error(`Service not found with serviceId: ${serviceId}`)
         }
 
-        switch (serviceType.type) {
+        switch (assertedServiceWithType.type) {
             case "server":
-                return serverStmt.get(serviceId)
+                return serverStmt.get(serviceId) as ServerType
             case "static-site":
-                return siteStmt.get(serviceId)
+                return siteStmt.get(serviceId) as SiteType
             default:
-                throw new Error(`Unknown service type: ${serviceType.type}`)
+                throw new Error(`Unknown service type: ${assertedServiceWithType.type}`)
         }
     }
 
-    function readServicesByFilter(filter: ServiceQueryFilter) {
+    function readServicesByFilter(filter: ServiceQueryFilter): ServiceType[] {
         const {names, types, groupIds, regions, createdBefore, createdAfter, updatedBefore, updatedAfter} = filter
 
         // language=SQLite
@@ -142,17 +120,13 @@ function initServiceReader(db: DataBaseType) {
             query += `WHERE ${whereClauses.join(` AND `)}`
         }
 
-        console.log("Final query: ", query);
-        console.log("Final params: ", params);
 
         const stmt = db.prepare(query);
         const services = stmt.all(...params)
-        console.log("Services: ", services)
-        return services
+        return services as ServiceType[]
     }
 
     return {readServiceById, readServicesByFilter}
 }
 
 export {initServiceReader}
-export type {ServiceQueryFilter}
