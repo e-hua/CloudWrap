@@ -24,7 +24,7 @@ resource "aws_ecs_service" "main" {
   cluster         = aws_ecs_cluster.main.id
   task_definition = aws_ecs_task_definition.app.arn
   launch_type     = "EC2"
-  desired_count   = 1
+  desired_count   = var.desired_count
 
   # Force ECS to stop the old task before starting the new one
   deployment_maximum_percent         = 100 # Do not run more than 1 task

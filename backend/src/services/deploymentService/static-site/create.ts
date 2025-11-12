@@ -8,29 +8,18 @@ import {
   STRICT_TF_ROLE_ARN as tf_role_arn,
 } from "@/config/aws.config.js";
 import { getErrorMessage } from "@/utils/errors.js";
+import {serviceCreator} from "@/db/index.js";
 
 import { fileURLToPath } from "url";
-import { runTofu, type StreamData } from "../runTofu.js";
+import {runTofu, runTofuAndCollect, type StreamData} from "../runTofu.js";
+import type {DBSiteInput} from "@/db/queries/Services/Services.types.js";
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-type CreateStaticSiteInput = {
-  projectName: string;
-  siteBucketName: string;
-
-  githubRepoId: string;
-  githubBranchName: string;
-  githubConnectionArn: string;
-  rootDirectory?: string;
-  buildCommand?: string;
-  publishDirectory?: string;
-
-  domainName?: string;
-  acmCertificateArn?: string;
-};
-
-// This funciton create a new temporary directory
+// This function create a new temporary directory
 // runs 'tofu init' 'tofu apply' in them
+import type {CreateStaticSiteInput} from "@/services/deploymentService/deployment.schema.js";
 
 async function createStaticSite(
   inputs: CreateStaticSiteInput,
@@ -91,31 +80,24 @@ async function createStaticSite(
     const applyArgs = [
       "apply",
       "-auto-approve",
-      `-var=bucket_name=${inputs.siteBucketName}`,
+      `-var=bucket_name=${`${inputs.projectName}-site-bucket`}`,
       `-var=project_name=${inputs.projectName}`,
       `-var=execution_role_arn=${tf_role_arn}`,
       `-var=aws_region=${region}`,
       `-var=github_repo_id=${inputs.githubRepoId}`,
       `-var=github_branch_name=${inputs.githubBranchName}`,
       `-var=github_connection_arn=${inputs.githubConnectionArn}`,
+      `-var=root_directory=${inputs.rootDirectory}`,
+      `-var=build_command=${inputs.buildCommand}`,
+      `-var=publish_directory=${inputs.publishDirectory}`,
     ];
 
-    if (inputs.domainName) {
-      applyArgs.push(`-var=domain_name=${inputs.domainName}`);
+    if (inputs.customizedDomainName) {
+      applyArgs.push(`-var=domain_name=${inputs.customizedDomainName}`);
     }
 
     if (inputs.acmCertificateArn) {
       applyArgs.push(`-var=acm_certificate_arn=${inputs.acmCertificateArn}`);
-    }
-
-    if (inputs.rootDirectory) {
-      applyArgs.push(`-var=root_directory=${inputs.rootDirectory}`);
-    }
-    if (inputs.buildCommand) {
-      applyArgs.push(`-var=build_command=${inputs.buildCommand}`);
-    }
-    if (inputs.publishDirectory) {
-      applyArgs.push(`-var=publish_directory=${inputs.publishDirectory}`);
     }
 
     // Run tofu apply command
@@ -124,6 +106,35 @@ async function createStaticSite(
       dirPath: tempDir,
       onStream: onStreamCallback,
     });
+
+    onStreamCallback({
+      source: "sys-info",
+      data: "Retrieving the service info and inserting h",
+    });
+
+    const collectArgs = ['output', '-json']
+
+    const jsonOutputs = await runTofuAndCollect({args: collectArgs, dirPath: tempDir})
+    const outputs = JSON.parse(jsonOutputs)
+
+    const {createSiteTransaction} = serviceCreator;
+    const siteInput: DBSiteInput = {
+      name: inputs.projectName,
+      type: "static-site",
+      group_id: undefined,
+      region: region,
+      repoId: inputs.githubRepoId,
+      branchName: inputs.githubBranchName,
+      rootDir: inputs.rootDirectory,
+      cloudFrontDomainName: outputs.cloudfront_domain_name.value,
+
+      buildCommand: inputs.buildCommand,
+      publishDirectory: inputs.publishDirectory,
+      customizedDomainName: inputs.customizedDomainName,
+      acmCertificateARN: inputs.acmCertificateArn,
+    };
+
+    createSiteTransaction(siteInput);
   } catch (err) {
     onStreamCallback({ source: "sys-failure", data: getErrorMessage(err) });
     throw err;
@@ -131,7 +142,7 @@ async function createStaticSite(
     await rm(tempDir, { recursive: true, force: true });
     onStreamCallback({
       source: "sys-info",
-      data: "Finished deleting the temporary deployment worksapce",
+      data: "Finished deleting the temporary deployment workspace",
     });
   }
 }

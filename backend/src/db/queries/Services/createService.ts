@@ -1,17 +1,17 @@
 import type {Transaction} from "better-sqlite3";
 import type {Database as DataBaseType} from "better-sqlite3"
-import type {ServerInput, SiteInput} from "@/db/queries/Services/Services.types.js";
+import type {DBServerInput, DBSiteInput} from "@/db/queries/Services/Services.types.js";
 
 // language=SQLite
 const insertService = `
-    INSERT INTO Services(name, type, group_id, region, repoId, branchName, rootDir)
-    VALUES (@name, @type, @group_id, @region, @repoId, @branchName, @rootDir);
+    INSERT INTO Services(name, type, group_id, region, repoId, branchName, rootDir, cloudFrontDomainName)
+    VALUES (@name, @type, @group_id, @region, @repoId, @branchName, @rootDir, @cloudFrontDomainName);
 `
 
 // language=SQLite
 const insertStaticSite = `
-    INSERT INTO StaticSiteServices(service_id, siteBucketName, buildCommand, publishDirectory, domainName, acmCertificateARN)
-    VALUES (@service_id, @siteBucketName, @buildCommand, @publishDirectory, @domainName, @acmCertificateARN)
+    INSERT INTO StaticSiteServices(service_id, buildCommand, publishDirectory, customizedDomainName, acmCertificateARN)
+    VALUES (@service_id, @buildCommand, @publishDirectory, @customizedDomainName, @acmCertificateARN)
 `
 
 // language=SQLite
@@ -25,10 +25,10 @@ function initServiceCreator(db: DataBaseType) {
     const insertSiteStmt = db.prepare(insertStaticSite)
     const insertServerStmt = db.prepare(insertServer)
 
-    const createSiteTransaction: Transaction<(input: SiteInput) => bigint | number> =
-        db.transaction((input: SiteInput) => {
+    const createSiteTransaction: Transaction<(input: DBSiteInput) => bigint | number> =
+        db.transaction((input: DBSiteInput) => {
             const {name, type, group_id, region, repoId, branchName, rootDir,
-                siteBucketName, buildCommand, publishDirectory, domainName, acmCertificateARN} = input
+                buildCommand, publishDirectory, customizedDomainName, acmCertificateARN, cloudFrontDomainName} = input
             const serviceInsertionRunResult = insertServiceStmt.run({
                 name,
                 type,
@@ -36,26 +36,26 @@ function initServiceCreator(db: DataBaseType) {
                 region,
                 repoId,
                 branchName,
-                rootDir
+                rootDir,
+                cloudFrontDomainName
             })
 
             const service_id = serviceInsertionRunResult.lastInsertRowid;
             insertSiteStmt.run({
                 service_id,
-                siteBucketName,
                 buildCommand,
                 publishDirectory,
-                domainName: domainName || null,
+                customizedDomainName: customizedDomainName || null,
                 acmCertificateARN: acmCertificateARN || null
             })
 
             return service_id
         })
 
-    const createServerTransaction: Transaction<(input: ServerInput) => bigint | number> =
-        db.transaction((input: ServerInput) => {
+    const createServerTransaction: Transaction<(input: DBServerInput) => bigint | number> =
+        db.transaction((input: DBServerInput) => {
             const {name, type, group_id, region, repoId, branchName, rootDir,
-                containerPort, instanceType, dockerfilePath, secretHeaderValue} = input
+                containerPort, instanceType, dockerfilePath, secretHeaderValue, cloudFrontDomainName} = input
 
             const serviceInsertionRunResult = insertServiceStmt.run({
                 name,
@@ -64,7 +64,8 @@ function initServiceCreator(db: DataBaseType) {
                 region,
                 repoId,
                 branchName,
-                rootDir
+                rootDir,
+                cloudFrontDomainName
             })
 
             const service_id = serviceInsertionRunResult.lastInsertRowid;

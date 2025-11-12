@@ -19,12 +19,12 @@ function createCodePipelineClient(credential: StrictCredentials) {
 // projectName: the name of the codepipeline
 async function manualDeploy(
   credential: StrictCredentials,
-  projectName: string
+  pipelineName: string
 ) {
   const client = createCodePipelineClient(credential);
 
   const command = new StartPipelineExecutionCommand({
-    name: projectName,
+    name: pipelineName,
   });
 
   const response = await client.send(command);

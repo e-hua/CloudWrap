@@ -65,3 +65,9 @@ variable "dockerfile_path" {
   description = "Path to the Dockerfile, relative to the root_directory"
   default     = "Dockerfile"
 }
+
+variable "desired_count" {
+  description = "The number of tasks to run."
+  type        = number
+  default     = 1
+}

@@ -1,6 +1,7 @@
 # Artifact S3 bucket for the pipeline
 resource "aws_s3_bucket" "codepipeline_artifacts" {
   bucket = "${var.project_name}-pipeline-artifacts-${data.aws_caller_identity.current.account_id}"
+  force_destroy = true
 }
 
 # Data source to get current account ID (for ECR URI)

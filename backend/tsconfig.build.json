@@ -1,0 +1,20 @@
+{
+  // Inherit all the rules from the main file
+  "extends": "./tsconfig.json",
+  // Overriding tsconfig.json
+  "compilerOptions": {
+    // Allow to emit(build) the file
+    "noEmit": false,
+    // Beginning at src
+    "rootDir": "src",
+    // Outputting to dist
+    "outDir": "dist",
+
+    // --- Other Build Outputs ---
+    "sourceMap": true,
+    "declaration": true,
+    "declarationMap": true
+  },
+  // Only compile hte src folder
+  "include": ["src"]
+}

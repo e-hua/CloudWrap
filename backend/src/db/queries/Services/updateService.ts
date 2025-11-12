@@ -1,28 +1,28 @@
 import type {Transaction} from "better-sqlite3";
 
 import type {Database as DataBaseType} from "better-sqlite3"
-import type {ServerInput, SiteInput} from "@/db/queries/Services/Services.types.js";
+import type {DBServerInput, DBSiteInput} from "@/db/queries/Services/Services.types.js";
 
 // language=SQLite
 const updateService = `
     -- Notice that we cannot modify "type" or "id" here
+    -- Neither can we modify the "name", since there are many attributes derived from it 
     UPDATE Services
-    SET name = @name, 
-        group_id = @group_id,
+    SET group_id = @group_id,
         region = @region,
         repoId = @repoId,
         branchName = @branchName,
-        rootDir = @rootDir
+        rootDir = @rootDir,
+        cloudFrontDomainName = @cloudFrontDomainName
     WHERE id = @id 
 `
 
 // language=SQLite
 const updateSite = `    
     UPDATE StaticSiteServices
-    SET siteBucketName = @siteBucketName,
-        buildCommand = @buildCommand,
+    SET buildCommand = @buildCommand,
         publishDirectory = @publishDirectory,
-        domainName = @domainName,
+        customizedDomainName = @customizedDomainName,
         acmCertificateARN = @acmCertificateARN
     WHERE service_id = @service_id;
 `
@@ -42,46 +42,45 @@ function initServiceUpdater(db: DataBaseType) {
     const updateSiteStmt = db.prepare(updateSite)
     const updateServerStmt = db.prepare(updateServer)
 
-    const updateSiteTransaction : Transaction<(service_id: number | bigint, input: Omit<SiteInput, "type">) => bigint | number> =
-        db.transaction((service_id: number | bigint, input: Omit<SiteInput, "type">) => {
-            const {name, group_id, region, repoId, branchName, rootDir,
-                siteBucketName, buildCommand, publishDirectory, domainName, acmCertificateARN} = input
+    const updateSiteTransaction : Transaction<(service_id: number | bigint, input: Omit<DBSiteInput, "type" | "name">) => bigint | number> =
+        db.transaction((service_id: number | bigint, input: Omit<DBSiteInput, "type" | "name">) => {
+            const {group_id, region, repoId, branchName, rootDir,
+                buildCommand, publishDirectory, customizedDomainName, acmCertificateARN, cloudFrontDomainName} = input
 
             updateServiceStmt.run({
                 id: service_id,
-                name,
                 group_id: group_id || null,
                 region,
                 repoId,
                 branchName,
-                rootDir
+                rootDir,
+                cloudFrontDomainName
             })
 
             updateSiteStmt.run({
                 service_id,
-                siteBucketName,
                 buildCommand,
                 publishDirectory,
-                domainName: domainName || null,
+                customizedDomainName: customizedDomainName || null,
                 acmCertificateARN: acmCertificateARN || null
             })
 
             return service_id
         })
 
-    const updateServerTransaction: Transaction<(service_id: number | bigint, input: Omit<ServerInput, "type">) => bigint | number> =
-        db.transaction((service_id: number | bigint, input: Omit<ServerInput, "type">)  => {
-            const {name, group_id, region, repoId, branchName, rootDir,
-                containerPort, instanceType, dockerfilePath, secretHeaderValue} = input
+    const updateServerTransaction: Transaction<(service_id: number | bigint, input: Omit<DBServerInput, "type" | "name">) => bigint | number> =
+        db.transaction((service_id: number | bigint, input: Omit<DBServerInput, "type" | "name">)  => {
+            const {group_id, region, repoId, branchName, rootDir,
+                containerPort, instanceType, dockerfilePath, secretHeaderValue, cloudFrontDomainName} = input
 
             updateServiceStmt.run({
                 id: service_id,
-                name,
                 group_id: group_id || null,
                 region,
                 repoId,
                 branchName,
-                rootDir
+                rootDir,
+                cloudFrontDomainName
             })
 
             updateServerStmt.run({

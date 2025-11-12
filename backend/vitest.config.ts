@@ -14,17 +14,17 @@ export default defineConfig({
   // 2. PATH ALIASES
   resolve: {
     alias: [
-        {
-            // This is to replace every file with .js ending with .ts
-            find: /^@\/(.*)\.js$/,
-            replacement: path.resolve(__dirname, 'src/$1.ts'),
-        },
-        {
-            // This is the fallback for any other '@/' imports
-            // (e.g., to a folder, a .json, etc.)
-            find: '@/',
-            replacement: path.resolve(__dirname, 'src/'),
-        },
+      {
+        // This is to replace every file with .js ending with .ts
+        find: /^@\/(.*)\.js$/,
+        replacement: path.resolve(__dirname, 'src/$1.ts'),
+      },
+      {
+        // This is the fallback for any other '@/' imports
+        // (e.g., to a folder, a .json, etc.)
+        find: '@/',
+        replacement: path.resolve(__dirname, 'src/'),
+      },
     ]
   },
 });

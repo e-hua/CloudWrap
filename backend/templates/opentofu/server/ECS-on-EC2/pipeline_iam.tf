@@ -4,6 +4,7 @@
 # This is the "warehouse" for our Docker images
 resource "aws_ecr_repository" "app_repo" {
   name = var.project_name
+  force_delete = true
 }
 
 # This role allows CodePipeline to start CodeBuild and use S3

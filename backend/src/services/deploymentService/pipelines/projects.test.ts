@@ -1,5 +1,5 @@
 import { assumeRole } from "@/services/assumeRoleService.js";
-import { getPipelineHistory, listAllPipelines } from "./projects.js";
+import { getPipelineHistory, listAllPipelines } from "./pipelines.js";
 
 async function main() {
   try {

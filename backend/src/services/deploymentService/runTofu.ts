@@ -13,7 +13,7 @@ type RunTofuCommand = {
 
 // This is built on the event emitter system which requires callback functions
 // Which means we got to use Promise and reject for error handling
-function runTofu({ args, dirPath, onStream }: RunTofuCommand) {
+function runTofu({ args, dirPath, onStream }: RunTofuCommand): Promise<void> {
   return new Promise<void>((resolve, reject) => {
     const tofu_process = spawn("tofu", args, {
       cwd: dirPath,
@@ -44,5 +44,39 @@ function runTofu({ args, dirPath, onStream }: RunTofuCommand) {
   });
 }
 
+function runTofuAndCollect({args, dirPath}: Omit<RunTofuCommand, 'onStream'>): Promise<string> {
+  return new Promise<string>((resolve, reject) => {
+    const tofu_process = spawn("tofu", args, {
+      cwd: dirPath,
+      env: {
+        ...process.env,
+      },
+    });
+
+    let stdout = ''
+    let stderr = ''
+
+    tofu_process.stdout.on("data", (data) => {
+      stdout+=data.toString();
+    });
+
+    tofu_process.stderr.on("data", (data) => {
+      stderr+=data.toString()
+    });
+
+    tofu_process.on("close", (code) => {
+      if (code === 0) {
+        resolve(stdout);
+      } else {
+        reject(new Error(`OpenTofu exited with code ${code}: ${stderr}`));
+      }
+    });
+
+    tofu_process.on("error", (err) => {
+      reject(err);
+    });
+  });
+}
+
 export type { StreamData, RunTofuCommand };
-export { runTofu };
+export { runTofu, runTofuAndCollect};

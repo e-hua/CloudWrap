@@ -28,7 +28,11 @@ function createTables(db: DataBaseType) {
   const createServices = `
     CREATE TABLE IF NOT EXISTS Services (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
-      name TEXT NOT NULL ,
+      -- some derived attributes
+        -- siteBucketName: {name}-site-bucket
+        -- pipelineName: {name}-pipeline
+        -- codeBuildName: {name}-build
+      name TEXT UNIQUE NOT NULL ,
       type TEXT NOT NULL ,
       -- This can be NULL, a service can have no group
       group_id INTEGER REFERENCES ServiceGroups(id),
@@ -38,7 +42,8 @@ function createTables(db: DataBaseType) {
       repoId TEXT NOT NULL,
       branchName TEXT NOT NULL,
       rootDir TEXT NOT NULL,
-      CONSTRAINT name_type_unique UNIQUE (name, type)
+      -- This is the default CloudFront domain name allocated by CloudWrap
+      cloudFrontDomainName TEXT UNIQUE NOT NULL
     );
   `;
 
@@ -46,10 +51,9 @@ function createTables(db: DataBaseType) {
   const createStaticSiteServices = `
     CREATE TABLE IF NOT EXISTS StaticSiteServices (  
       service_id INTEGER PRIMARY KEY REFERENCES Services(id) NOT NULL,
-      siteBucketName TEXT NOT NULL ,
       buildCommand TEXT NOT NULL ,
       publishDirectory TEXT NOT NULL ,
-      domainName TEXT,
+      customizedDomainName TEXT,
       acmCertificateARN TEXT
     );
   `;

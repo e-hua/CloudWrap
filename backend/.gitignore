@@ -2,5 +2,5 @@
 dist
 node_modules/
 .cache/
-src/db/cloudwrap.db
 cloudwrap.db*
+tsconfig.build.tsbuildinfo

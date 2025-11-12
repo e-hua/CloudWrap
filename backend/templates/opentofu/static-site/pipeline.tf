@@ -4,6 +4,7 @@ data "aws_caller_identity" "current" {}
 # This is the "workspace" S3 bucket for the pipeline
 resource "aws_s3_bucket" "codepipeline_artifacts" {
   bucket = "${var.project_name}-pipeline-artifacts-${data.aws_caller_identity.current.account_id}"
+  force_destroy = true
 }
 
 # This is the "Build Server" configuration
@@ -24,7 +25,7 @@ resource "aws_codebuild_project" "main" {
       phases:
         install:
           runtime-versions:
-            nodejs: 18 # You could also make this a variable
+            nodejs: 20 # You could also make this a variable
           commands:
             # If a root_directory is set, cd into it
             - ${var.root_directory != null ? "cd ${var.root_directory}" : "echo 'Building from repo root.'"}
@@ -49,7 +50,7 @@ resource "aws_codebuild_project" "main" {
 
 # This is the "Orchestrator" that connects everything
 resource "aws_codepipeline" "main" {
-  name     = var.project_name
+  name     = "${var.project_name}-pipeline"
   role_arn = aws_iam_role.codepipeline_role.arn
 
   artifact_store {

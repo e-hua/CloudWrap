@@ -6,6 +6,7 @@ locals {
 # We create a standard S3 bucket.
 resource "aws_s3_bucket" "website_bucket" {
   bucket = var.bucket_name
+  force_destroy = true
 }
 
 # --- 2. Block All Public Access to the Bucket ---

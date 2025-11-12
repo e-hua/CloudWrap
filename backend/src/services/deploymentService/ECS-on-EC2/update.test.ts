@@ -1,26 +1,18 @@
-import { assumeRole } from "@/services/assumeRoleService.js";
-import {createStaticSite, type CreateStaticSiteInput} from "./create.js";
-import { manualDeploy } from "../pipelines/trigger-deployment.js";
+import {updateServer, type UpdateServerInput} from "@/services/deploymentService/ECS-on-EC2/update.js";
 
 async function main() {
   console.log("--- STARTING static site DEPLOYMENT ---");
 
-  const testInputs: CreateStaticSiteInput = {
-    projectName: "demo-static-site",
-
-    githubRepoId: "e-hua/CloudWrap",
-    githubBranchName: "dev",
+  const updateServerInput: UpdateServerInput = {
     githubConnectionArn:
       "arn:aws:codestar-connections:us-east-2:276291856310:connection/e7b8cd7c-295f-4776-9f93-4356f180edd6",
-    rootDirectory: "frontend",
-    buildCommand: "npm run build",
-    publishDirectory: "dist",
+    dockerfile_path: "./Dockerfile"
   };
 
   try {
     const logCallback = (elem: any) => console.log(elem.data);
 
-    await createStaticSite(testInputs, logCallback);
+    await updateServer(1, updateServerInput, logCallback);
 
     console.log("\n--- TEST DEPLOYMENT SUCCEEDED ---");
     console.log(

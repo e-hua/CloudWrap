@@ -1,5 +1,6 @@
 import type {Database as DataBaseType} from "better-sqlite3"
-import type {SiteType, ServerType, ServiceType, ServiceQueryFilter} from "@/db/queries/Services/Services.types.js";
+import type {DBSiteType, DBServerType, DBServiceType} from "@/db/queries/Services/Services.types.js";
+import type {DBServiceQueryFilter} from "@/db/queries/Services/Services.schema.js";
 // language=SQLite
 const getServiceTypeQuery= `
         SELECT type 
@@ -28,7 +29,7 @@ function initServiceReader(db: DataBaseType) {
     const siteStmt = db.prepare(getStaticSiteQuery)
     const serverStmt = db.prepare(getServerQuery)
 
-    function readServiceById(serviceId: number | bigint): ServerType | SiteType {
+    function readServiceById(serviceId: number | bigint): DBServerType | DBSiteType {
         const serviceType = typeStmt.get(serviceId)
 
         const assertedServiceWithType = serviceType as {type: string}
@@ -39,15 +40,15 @@ function initServiceReader(db: DataBaseType) {
 
         switch (assertedServiceWithType.type) {
             case "server":
-                return serverStmt.get(serviceId) as ServerType
+                return serverStmt.get(serviceId) as DBServerType
             case "static-site":
-                return siteStmt.get(serviceId) as SiteType
+                return siteStmt.get(serviceId) as DBSiteType
             default:
                 throw new Error(`Unknown service type: ${assertedServiceWithType.type}`)
         }
     }
 
-    function readServicesByFilter(filter: ServiceQueryFilter): ServiceType[] {
+    function readServicesByFilter(filter: DBServiceQueryFilter): DBServiceType[] {
         const {names, types, groupIds, regions, createdBefore, createdAfter, updatedBefore, updatedAfter} = filter
 
         // language=SQLite
@@ -59,7 +60,7 @@ function initServiceReader(db: DataBaseType) {
         const whereClauses = []
         const params = []
 
-        if (names.length > 0) {
+        if (names && names.length > 0) {
             // Placeholder examples: `?, ?, ?`
             const placeHolders = names.map(elem => "?").join(", ")
 
@@ -69,7 +70,7 @@ function initServiceReader(db: DataBaseType) {
             params.push(...names)
         }
 
-        if (types.length > 0) {
+        if (types && types.length > 0) {
             const placeHolders = types.map(elem => "?").join(", ")
 
             // In Clause: `type in (?, ?, ?)`
@@ -78,7 +79,7 @@ function initServiceReader(db: DataBaseType) {
             params.push(...types)
         }
 
-        if (groupIds.length > 0) {
+        if (groupIds && groupIds.length > 0) {
             const placeHolders = groupIds.map(elem => "?").join(", ")
 
             // In Clause: `group_id in (?, ?, ?)`
@@ -87,7 +88,7 @@ function initServiceReader(db: DataBaseType) {
             params.push(...groupIds)
         }
 
-        if (regions.length > 0) {
+        if (regions && regions.length > 0) {
             const placeHolders = regions.map(elem => "?").join(", ")
 
             // In Clause: `region in (?, ?, ?)`
@@ -123,7 +124,7 @@ function initServiceReader(db: DataBaseType) {
 
         const stmt = db.prepare(query);
         const services = stmt.all(...params)
-        return services as ServiceType[]
+        return services as DBServiceType[]
     }
 
     return {readServiceById, readServicesByFilter}

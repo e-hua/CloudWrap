@@ -3,35 +3,24 @@ import { mkdtemp, rm } from "fs/promises";
 import { tmpdir } from "os";
 import { copy } from "fs-extra";
 import { randomBytes } from "crypto";
-import { runTofu, type StreamData } from "../runTofu.js";
+import {runTofu, runTofuAndCollect, type StreamData} from "../runTofu.js";
 import {
   STRICT_TF_STATE_BUCKET as state_bucket_name,
   STRICT_AWS_REGION as region,
   STRICT_TF_ROLE_ARN as tf_role_arn,
 } from "@/config/aws.config.js";
 import { getErrorMessage } from "@/utils/errors.js";
-
-// This creates a 64-character-long, highly random hex string
-
-type CreateECSInput = {
-  projectName: string;
-  container_port: number;
-
-  githubRepoId: string;
-  githubBranchName: string;
-  githubConnectionArn: string;
-
-  instance_type?: string;
-  rootDirectory?: string;
-  dockerfile_path?: string;
-};
-
 import { fileURLToPath } from "url";
+import {serviceCreator} from "@/db/index.js";
+import type {DBServerInput} from "@/db/queries/Services/Services.types.js";
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-async function createECS(
-  inputs: CreateECSInput,
+import type {CreateServerInput} from "@/services/deploymentService/deployment.schema.js";
+
+async function createServer(
+  inputs: CreateServerInput,
   onStreamCallback: (data: StreamData) => void
 ): Promise<void> {
   const templatePath = path.join(
@@ -49,6 +38,7 @@ async function createECS(
   // Using temporary folder to carry out the deployment
   // E.g. final directory path: '/tmp/cloudwrap-deployment-aB1xZ2'
   const tempDir = await mkdtemp(path.join(tmpdir(), "cloudwrap-deployment-"));
+  // This creates a 64-character-long, highly random hex string
   const generatedSecret = randomBytes(32).toString("hex");
 
   try {
@@ -100,19 +90,10 @@ async function createECS(
       `-var=github_repo_id=${inputs.githubRepoId}`,
       `-var=github_branch_name=${inputs.githubBranchName}`,
       `-var=github_connection_arn=${inputs.githubConnectionArn}`,
+      `-var=instance_type=${inputs.instance_type}`,
+      `-var=root_directory=${inputs.rootDirectory}`,
+      `-var=dockerfile_path=${inputs.dockerfile_path}`,
     ];
-
-    if (inputs.instance_type) {
-      applyArgs.push(`-var=instance_type=${inputs.instance_type}`);
-    }
-
-    if (inputs.rootDirectory) {
-      applyArgs.push(`-var=root_directory=${inputs.rootDirectory}`);
-    }
-
-    if (inputs.dockerfile_path) {
-      applyArgs.push(`-var=dockerfile_path=${inputs.dockerfile_path}`);
-    }
 
     // Run tofu apply command
     await runTofu({
@@ -120,6 +101,30 @@ async function createECS(
       dirPath: tempDir,
       onStream: onStreamCallback,
     });
+
+    const collectArgs = ['output', '-json']
+
+    const jsonOutputs = await runTofuAndCollect({args: collectArgs, dirPath: tempDir})
+    const outputs = JSON.parse(jsonOutputs)
+
+    const {createServerTransaction} = serviceCreator;
+    const serverInput: DBServerInput = {
+      name: inputs.projectName,
+      type: "server",
+      group_id: undefined,
+      region: region,
+      repoId: inputs.githubRepoId,
+      branchName: inputs.githubBranchName,
+      rootDir: inputs.rootDirectory,
+      cloudFrontDomainName: outputs.application_url.value,
+
+      containerPort: inputs.container_port,
+      instanceType: inputs.instance_type,
+      dockerfilePath: inputs.dockerfile_path,
+      secretHeaderValue: generatedSecret,
+    }
+
+    createServerTransaction(serverInput)
   } catch (err) {
     onStreamCallback({ source: "sys-failure", data: getErrorMessage(err) });
     throw err;
@@ -132,5 +137,5 @@ async function createECS(
   }
 }
 
-export { createECS };
-export type { CreateECSInput };
+export { createServer };
+export type { CreateServerInput };

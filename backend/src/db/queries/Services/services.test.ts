@@ -10,9 +10,9 @@ import {initServiceDeleter} from "@/db/queries/Services/deleteService.js";
 
 import {createTables, createTriggers} from "@/db/index.js";
 
-import type {SiteInput, ServerInput} from "@/db/queries/Services/Services.types.ts";
-import type {SiteType, ServerType, ServiceType} from "@/db/queries/Services/Services.types.js";
-import type {ServiceQueryFilter} from "@/db/queries/Services/Services.types.ts";
+import type {DBSiteInput, DBServerInput} from "@/db/queries/Services/Services.types.ts";
+import type {DBSiteType, DBServerType, DBServiceType} from "@/db/queries/Services/Services.types.js";
+import type {DBServiceQueryFilter} from "@/db/queries/Services/Services.schema.js";
 
 import {sleep} from "@/utils/sleep.js";
 
@@ -20,39 +20,42 @@ describe('Service-related table tests', () => {
     // create an in-memory database for testing
     let testDB: DataBaseType;
 
-    let createSiteTransaction: Transaction<(input: SiteInput) => bigint | number>;
-    let createServerTransaction: Transaction<(input: ServerInput) => bigint | number>;
+    let createSiteTransaction: Transaction<(input: DBSiteInput) => bigint | number>;
+    let createServerTransaction: Transaction<(input: DBServerInput) => bigint | number>;
 
-    let readServiceById: (serviceId: number | bigint) => ServerType | SiteType
-    let readServicesByFilter: (filter: ServiceQueryFilter) => ServiceType[]
+    let readServiceById: (serviceId: number | bigint) => DBServerType | DBSiteType
+    let readServicesByFilter: (filter: DBServiceQueryFilter) => DBServiceType[]
 
-    let updateSiteTransaction: Transaction<(service_id: number | bigint, input: Omit<SiteInput, "type">) => bigint | number>;
-    let updateServerTransaction: Transaction<(service_id: number | bigint, input: Omit<ServerInput, "type">) => bigint | number>
+    let updateSiteTransaction: Transaction<(service_id: number | bigint, input: Omit<DBSiteInput, "type">) => bigint | number>;
+    let updateServerTransaction: Transaction<(service_id: number | bigint, input: Omit<DBServerInput, "type">) => bigint | number>
 
     let deleteServiceTransaction:  Transaction<(id: number | bigint) => bigint | number>;
 
-    const mockSiteInput : SiteInput = {
-        name: "mock-site",
-        type: "static-site",
-        // group_id: undefined,
-        region: "us-east-1",
-        repoId: "e-hua/CloudWrap",
-        branchName: "dev",
-        rootDir: ".",
+    const mockSiteInput : DBSiteInput = {
+      name: "mock-site",
+      type: "static-site",
+      group_id: undefined,
+      region: "us-east-1",
+      repoId: "e-hua/CloudWrap",
+      branchName: "dev",
+      rootDir: ".",
+      cloudFrontDomainName: "123.cloudfront.net",
 
-        siteBucketName: "mock-site-CloudWrap-bucket",
-        buildCommand: "npm run build",
-        publishDirectory: "dist",
+      buildCommand: "npm run build",
+      publishDirectory: "dist",
+      customizedDomainName: undefined,
+      acmCertificateARN: undefined
     }
 
-    const mockServerInput : ServerInput = {
+    const mockServerInput : DBServerInput = {
         name: "mock-server",
         type: "server",
-        // group_id: undefined,
+        group_id: undefined,
         region: "us-east-1",
         repoId: "e-hua/CloudWrap",
         branchName: "dev",
         rootDir: ".",
+        cloudFrontDomainName: "456.cloudfront.net",
 
         containerPort: 8080,
         instanceType: "t3.nano",
@@ -60,7 +63,7 @@ describe('Service-related table tests', () => {
         secretHeaderValue: "123"
     }
 
-    const selectAllFromServiceFilter: ServiceQueryFilter = {
+    const selectAllFromServiceFilter: DBServiceQueryFilter = {
         names: [],
         types: [],
         groupIds: [],
@@ -93,7 +96,7 @@ describe('Service-related table tests', () => {
 
 
             // READ
-            const retrievedSite: SiteType = readServiceById(siteServiceId) as SiteType
+            const retrievedSite: DBSiteType = readServiceById(siteServiceId) as DBSiteType
             // console.log(retrievedSite)
             expect(retrievedSite).toBeDefined()
             expect(retrievedSite.name).toBe(mockSiteInput.name)
@@ -108,7 +111,7 @@ describe('Service-related table tests', () => {
             expect(serverServiceId).toBe(1);
 
             // READ
-            const retrievedServer: ServerType = readServiceById(serverServiceId) as ServerType
+            const retrievedServer: DBServerType = readServiceById(serverServiceId) as DBServerType
             // console.log(retrievedServer)
             expect(retrievedServer).toBeDefined()
             expect(retrievedServer.name).toBe(mockServerInput.name)
@@ -125,7 +128,7 @@ describe('Service-related table tests', () => {
             expect(serverServiceId).toBe(2);
 
             // FILTER
-            const retrievedServices: ServiceType[] = readServicesByFilter(selectAllFromServiceFilter) as ServiceType[]
+            const retrievedServices: DBServiceType[] = readServicesByFilter(selectAllFromServiceFilter) as DBServiceType[]
             expect(retrievedServices.length).toBe(2)
 
             const siteOnlyFilter = {
@@ -134,7 +137,7 @@ describe('Service-related table tests', () => {
                 regions: ["us-east-1"]
             }
 
-            const onlySiteServices: ServiceType[] = readServicesByFilter(siteOnlyFilter) as ServiceType[]
+            const onlySiteServices: DBServiceType[] = readServicesByFilter(siteOnlyFilter) as DBServiceType[]
             expect(onlySiteServices.length).toBe(1)
         })
 
@@ -142,17 +145,17 @@ describe('Service-related table tests', () => {
             // CREATE
             const siteServiceId = createSiteTransaction(mockSiteInput)
 
-            const mockUpdateSiteInput: Omit<SiteInput, "type"> = {
+            const mockUpdateSiteInput: Omit<DBSiteInput, "type"> = {
                 ...mockSiteInput,
-                name: "new-mock-site",
+                repoId: "e-hua/new-repo",
                 buildCommand: "vite build"
             }
 
             // UPDATE
             updateSiteTransaction(siteServiceId, mockUpdateSiteInput)
-            const updatedSite: SiteType= readServiceById(siteServiceId) as SiteType
+            const updatedSite: DBSiteType= readServiceById(siteServiceId) as DBSiteType
 
-            expect(updatedSite.name).toBe(mockUpdateSiteInput.name)
+            expect(updatedSite.repoId).toBe(mockUpdateSiteInput.repoId)
             expect(updatedSite.buildCommand).toBe(mockUpdateSiteInput.buildCommand)
         })
 
@@ -160,17 +163,17 @@ describe('Service-related table tests', () => {
             // CREATE
             const serverServiceId = createServerTransaction(mockServerInput)
 
-            const mockUpdateServerInput: Omit<ServerInput, "type"> = {
+            const mockUpdateServerInput: Omit<DBServerInput, "type"> = {
                 ...mockServerInput,
-                name: "new-mock-server",
+                repoId: "e-hua/new-repo",
                 dockerfilePath: "src/Dockerfile"
             }
 
             // UPDATE
             updateServerTransaction(serverServiceId, mockUpdateServerInput)
-            const updatedServer: ServerType= readServiceById(serverServiceId) as ServerType
+            const updatedServer: DBServerType= readServiceById(serverServiceId) as DBServerType
 
-            expect(updatedServer.name).toBe(mockUpdateServerInput.name)
+            expect(updatedServer.repoId).toBe(mockUpdateServerInput.repoId)
             expect(updatedServer.dockerfilePath).toBe(mockUpdateServerInput.dockerfilePath)
         })
 
@@ -182,14 +185,14 @@ describe('Service-related table tests', () => {
 
 
             // READ: Data exists before deletion
-            const retrievedServices: ServiceType[] = readServicesByFilter(selectAllFromServiceFilter) as ServiceType[]
+            const retrievedServices: DBServiceType[] = readServicesByFilter(selectAllFromServiceFilter) as DBServiceType[]
             console.log(retrievedServices)
             expect(retrievedServices.length).toBe(1)
 
             // DELETE
             const deletedId = deleteServiceTransaction(siteServiceId)
             expect(deletedId).toBe(siteServiceId)
-            const deletedServices: ServiceType[] = readServicesByFilter(selectAllFromServiceFilter) as ServiceType[]
+            const deletedServices: DBServiceType[] = readServicesByFilter(selectAllFromServiceFilter) as DBServiceType[]
             expect(deletedServices.length).toBe(0)
         })
     })
@@ -200,7 +203,7 @@ describe('Service-related table tests', () => {
             const siteServiceId = createSiteTransaction(mockSiteInput)
 
             await sleep(1000);
-            const mockUpdateSiteInput: Omit<SiteInput, "type"> = {
+            const mockUpdateSiteInput: Omit<DBSiteInput, "type"> = {
                 ...mockSiteInput,
                 name: "new-mock-site",
                 buildCommand: "vite build"
@@ -208,7 +211,7 @@ describe('Service-related table tests', () => {
 
             // UPDATE
             updateSiteTransaction(siteServiceId, mockUpdateSiteInput)
-            const updatedSite: SiteType= readServiceById(siteServiceId) as SiteType
+            const updatedSite: DBSiteType= readServiceById(siteServiceId) as DBSiteType
 
             // Assert that the updatedAt is not createdAt
             expect(updatedSite.updatedAt).not.toBe(updatedSite.createdAt)
