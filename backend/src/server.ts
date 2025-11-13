@@ -4,7 +4,7 @@ import cors from "cors";
 import s3Router from "@/controllers/s3Controller.js";
 import ec2Router from "@/controllers/ec2Controller.js";
 import billRouter from "@/controllers/billController.js";
-import serviceRouter from "@/controllers/serviceController.js";
+import serviceRouter from "@/controllers/services/index.js";
 
 const app = express();
 

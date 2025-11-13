@@ -30,7 +30,7 @@ function createPipeLineClient(credential: StrictCredentials) {
   });
 }
 
-function createCodeBuildClinet(credential: StrictCredentials) {
+function createCodeBuildClient(credential: StrictCredentials) {
   return new CodeBuildClient({
     region: region,
     credentials: {
@@ -56,15 +56,11 @@ type LogData = {
   data: string | ActionExecutionDetail[];
 };
 
-type PipelineLogData =
-  | LogData
-  | {
+type PipelineLogData = LogData & {
       source: "pipeline-status" | "sys-failure" | "sys-info";
     };
 
-type BuildingLogData =
-  | LogData
-  | {
+type BuildingLogData = LogData & {
       source: "build-status" | "build-logs" | "sys-failure" | "sys-info";
     };
 
@@ -159,7 +155,7 @@ async function streamBuildLogs(
   let info_sent: boolean = false;
   let next_token = undefined;
 
-  const codeBuildClient = createCodeBuildClinet(credential);
+  const codeBuildClient = createCodeBuildClient(credential);
   const cloudWatchLogsClient = createCloudWatchClient(credential);
   const buildCommand = new BatchGetBuildsCommand({ ids: [buildExecutionId] });
 
@@ -185,7 +181,7 @@ async function streamBuildLogs(
 
       const logMetaData = build?.logs;
 
-      // If there're more log events
+      // If there are more log events
       if (logMetaData?.groupName && logMetaData?.streamName) {
         const logCommand = new GetLogEventsCommand({
           logGroupName: logMetaData?.groupName,
@@ -201,7 +197,7 @@ async function streamBuildLogs(
         );
 
         for (const event of logs?.events ?? []) {
-          onStream({ source: "build-logs", data: event.message });
+          onStream({ source: "build-logs", data: event.message ?? "No message" });
         }
 
         if (logs.nextForwardToken && logs.nextForwardToken !== next_token) {

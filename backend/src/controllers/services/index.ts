@@ -31,6 +31,8 @@ import {manualDeploy} from "@/services/deploymentService/pipelines/trigger-deplo
 import {assumeRole} from "@/services/assumeRoleService.js";
 import {randomBytes} from "crypto";
 
+import deployRouter from "./deployController.js";
+
 const router = express.Router();
 const {readServiceById, readServicesByFilter} = serviceReader;
 
@@ -73,7 +75,7 @@ router.get("/:id", (req, res) => {
     const service = readServiceById(id)
 
     if (!service) {
-      return res.status(404).json({ err: "Service not found" });
+      return res.status(404).json({ err: `Service with id: ${id} not found` });
     }
 
     res.status(200).send(service)
@@ -157,7 +159,7 @@ router.patch("/:id", sseMiddleware, async (req, res) => {
   try {
     const idParseResult = idParamSchema.safeParse(req.params)
     if (!idParseResult.success) {
-      res.status(400).json({ err: fromZodError(idParseResult.error) });
+      res.sseError({ message: fromZodError(idParseResult.error) });
       return;
     }
 
@@ -216,7 +218,7 @@ router.delete("/:id", sseMiddleware, async (req, res) => {
   try {
     const idParseResult = idParamSchema.safeParse(req.params)
     if (!idParseResult.success) {
-      res.status(400).json({ err: fromZodError(idParseResult.error) });
+      res.sseError({ message: fromZodError(idParseResult.error) });
       return;
     }
     const { id } = idParseResult.data;
@@ -251,5 +253,7 @@ router.delete("/:id", sseMiddleware, async (req, res) => {
     res.sseError({ message: getErrorMessage(err) });
   }
 })
+
+router.use("/:id/deploys", deployRouter)
 
 export default router;

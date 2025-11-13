@@ -4,7 +4,7 @@ import {
   streamPipelineStatus,
   type BuildingLogData,
   type PipelineLogData,
-} from "./logs.js";
+} from "../logs.js";
 
 async function testStreamPipelineStatus() {
   const credential = await assumeRole();
@@ -14,7 +14,7 @@ async function testStreamPipelineStatus() {
     console.log(JSON.stringify(data, null, 2));
   };
 
-  streamPipelineStatus(
+  await streamPipelineStatus(
     credential,
     pipelineName,
     pipelineExecutionId,
@@ -30,7 +30,7 @@ async function testStreamBuildLogs() {
     console.log(JSON.stringify(data, null, 2));
   };
 
-  streamBuildLogs(credential, externalExecutionId, onStreamPrint);
+  await streamBuildLogs(credential, externalExecutionId, onStreamPrint);
 }
 
 await testStreamPipelineStatus();
