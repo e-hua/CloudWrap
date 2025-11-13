@@ -1,6 +1,3 @@
-import { mkdtemp, rm } from "fs/promises";
-import { tmpdir } from "os";
-import { copy } from "fs-extra";
 import path from "path";
 import {
   STRICT_TF_STATE_BUCKET as state_bucket_name,
@@ -8,10 +5,9 @@ import {
   STRICT_TF_ROLE_ARN as tf_role_arn,
 } from "@/config/aws.config.js";
 import { getErrorMessage } from "@/utils/errors.js";
-import {serviceCreator} from "@/db/index.js";
 
 import { fileURLToPath } from "url";
-import {runTofu, runTofuAndCollect, type StreamData} from "../runTofu.js";
+import {type RunTofuCommand, type StreamData} from "../runTofu.js";
 import type {DBSiteInput} from "@/db/queries/Services/Services.types.js";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -20,10 +16,24 @@ const __dirname = path.dirname(__filename);
 // This function create a new temporary directory
 // runs 'tofu init' 'tofu apply' in them
 import type {CreateStaticSiteInput} from "@/services/deploymentService/deployment.schema.js";
+import type {ServiceOperationDeps} from "@/services/deploymentService/deployment.types.js";
+import Database from "better-sqlite3";
+
+type CreateStaticSiteDeps = ServiceOperationDeps & {
+  serviceCreator: {
+    createSiteTransaction: Database.Transaction<(input: DBSiteInput) => (bigint | number)>
+  };
+  runTofuAndCollect: (command:  Omit<RunTofuCommand, 'onStream'>) => Promise<string>
+}
+
+type CreateStaticSiteInputs = {
+  inputs: CreateStaticSiteInput;
+  onStreamCallback: (data: StreamData) => void
+}
 
 async function createStaticSite(
-  inputs: CreateStaticSiteInput,
-  onStreamCallback: (data: StreamData) => void
+  {inputs, onStreamCallback} : CreateStaticSiteInputs,
+  {serviceCreator, runTofu, runTofuAndCollect, mkdtemp, copy, rm, tmpdir}: CreateStaticSiteDeps
 ): Promise<void> {
   const templatePath = path.join(
     __dirname,
@@ -148,4 +158,4 @@ async function createStaticSite(
 }
 
 export { createStaticSite };
-export type { CreateStaticSiteInput };
+export type { CreateStaticSiteInput, CreateStaticSiteDeps};

@@ -1,6 +1,3 @@
-import { mkdtemp, rm } from "fs/promises";
-import { tmpdir } from "os";
-import { copy } from "fs-extra";
 import path from "path";
 import {
   STRICT_TF_STATE_BUCKET as state_bucket_name,
@@ -8,23 +5,42 @@ import {
   STRICT_TF_ROLE_ARN as tf_role_arn,
 } from "@/config/aws.config.js";
 import { getErrorMessage } from "@/utils/errors.js";
-import {serviceCreator, serviceReader, serviceUpdater} from "@/db/index.js";
 
 import { fileURLToPath } from "url";
-import {runTofu, runTofuAndCollect, type StreamData} from "../runTofu.js";
-import type {DBServerInput, DBServerType, DBSiteInput, DBSiteType} from "@/db/queries/Services/Services.types.js";
-import {manualDeploy} from "@/services/deploymentService/pipelines/trigger-deployment.js";
-import {assumeRole} from "@/services/assumeRoleService.js";
+import {type RunTofuCommand, type StreamData} from "../runTofu.js";
+import type {DBServerInput, DBServerType, DBSiteType} from "@/db/queries/Services/Services.types.js";
+import {type StrictCredentials} from "@/services/assumeRoleService.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-import type {UpdateServerInput} from "@/services/deploymentService/deployment.schema.js";
+import type {UpdateServerInput, UpdateStaticSiteInput} from "@/services/deploymentService/deployment.schema.js";
+import type {ServiceOperationDeps} from "@/services/deploymentService/deployment.types.js";
+import Database from "better-sqlite3";
+import type {StartPipelineExecutionCommandOutput} from "@aws-sdk/client-codepipeline/dist-types/commands/index.js";
+
+type UpdateServerDeps = ServiceOperationDeps & {
+  serviceReader: {
+    readServiceById: (serviceId: (number | bigint)) => (DBServerType | DBSiteType)
+  };
+  serviceUpdater: {
+    updateServerTransaction: Database.Transaction<(service_id: (number | bigint), input: Omit<DBServerInput, "type" | "name">) => (bigint | number)>;
+  };
+  runTofuAndCollect: (command:  Omit<RunTofuCommand, 'onStream'>) => Promise<string>;
+  manualDeploy: (credential: StrictCredentials, pipelineName: string) => Promise<StartPipelineExecutionCommandOutput>
+  assumeRole: () => Promise<StrictCredentials>
+}
+
+type UpdateServerInputs = {
+  service_id: number;
+  inputs: UpdateServerInput;
+  onStreamCallback: (data: StreamData) => void;
+}
+
 
 async function updateServer(
-  service_id: number,
-  inputs: UpdateServerInput,
-  onStreamCallback: (data: StreamData) => void
+  {service_id, inputs, onStreamCallback} : UpdateServerInputs,
+  {serviceUpdater, serviceReader, runTofu, runTofuAndCollect, mkdtemp, copy, rm, tmpdir, manualDeploy, assumeRole}: UpdateServerDeps
 ): Promise<void> {
   const templatePath = path.join(
     __dirname,
@@ -155,4 +171,4 @@ async function updateServer(
 }
 
 export { updateServer };
-export type { UpdateServerInput };
+export type { UpdateServerInput, UpdateServerDeps, UpdateServerInputs};

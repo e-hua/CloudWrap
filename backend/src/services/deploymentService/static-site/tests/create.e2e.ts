@@ -1,6 +1,9 @@
-import { assumeRole } from "@/services/assumeRoleService.js";
-import {createStaticSite, type CreateStaticSiteInput} from "./create.js";
-import { manualDeploy } from "../pipelines/trigger-deployment.js";
+import {createStaticSite, type CreateStaticSiteDeps, type CreateStaticSiteInput} from "../create.js";
+import {serviceCreator} from "@/db/index.js";
+import {runTofu, runTofuAndCollect} from "@/services/deploymentService/runTofu.js";
+import {mkdtemp, rm} from "fs/promises";
+import {copy} from "fs-extra";
+import {tmpdir} from "os";
 
 async function main() {
   console.log("--- STARTING static site DEPLOYMENT ---");
@@ -17,10 +20,21 @@ async function main() {
     publishDirectory: "dist",
   };
 
+
+  const createServiceDeps: CreateStaticSiteDeps = {
+    serviceCreator,
+    runTofu,
+    runTofuAndCollect,
+    mkdtemp,
+    copy,
+    rm,
+    tmpdir
+  }
+
   try {
     const logCallback = (elem: any) => console.log(elem.data);
 
-    await createStaticSite(testInputs, logCallback);
+    await createStaticSite({inputs: testInputs, onStreamCallback: logCallback}, createServiceDeps);
 
     console.log("\n--- TEST DEPLOYMENT SUCCEEDED ---");
     console.log(

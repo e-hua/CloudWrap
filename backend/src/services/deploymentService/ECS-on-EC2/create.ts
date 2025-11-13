@@ -1,9 +1,5 @@
 import path from "path";
-import { mkdtemp, rm } from "fs/promises";
-import { tmpdir } from "os";
-import { copy } from "fs-extra";
-import { randomBytes } from "crypto";
-import {runTofu, runTofuAndCollect, type StreamData} from "../runTofu.js";
+import {type RunTofuCommand, type StreamData} from "../runTofu.js";
 import {
   STRICT_TF_STATE_BUCKET as state_bucket_name,
   STRICT_AWS_REGION as region,
@@ -11,17 +7,31 @@ import {
 } from "@/config/aws.config.js";
 import { getErrorMessage } from "@/utils/errors.js";
 import { fileURLToPath } from "url";
-import {serviceCreator} from "@/db/index.js";
-import type {DBServerInput} from "@/db/queries/Services/Services.types.js";
+import type {DBServerInput, DBSiteInput} from "@/db/queries/Services/Services.types.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-import type {CreateServerInput} from "@/services/deploymentService/deployment.schema.js";
+import type {CreateServerInput, CreateStaticSiteInput} from "@/services/deploymentService/deployment.schema.js";
+import type {ServiceOperationDeps} from "@/services/deploymentService/deployment.types.js";
+import Database from "better-sqlite3";
+
+type CreateServerDeps = ServiceOperationDeps & {
+  serviceCreator: {
+    createServerTransaction: Database.Transaction<(input: DBServerInput) => (bigint | number)>
+  };
+  runTofuAndCollect: (command:  Omit<RunTofuCommand, 'onStream'>) => Promise<string>
+  randomBytes: (size: number) => Buffer
+}
+
+type CreateServerInputs = {
+  inputs: CreateServerInput;
+  onStreamCallback: (data: StreamData) => void
+}
 
 async function createServer(
-  inputs: CreateServerInput,
-  onStreamCallback: (data: StreamData) => void
+  {inputs, onStreamCallback} : CreateServerInputs,
+  {serviceCreator, runTofu, runTofuAndCollect, mkdtemp, copy, rm, tmpdir, randomBytes}: CreateServerDeps
 ): Promise<void> {
   const templatePath = path.join(
     __dirname,
@@ -139,3 +149,4 @@ async function createServer(
 
 export { createServer };
 export type { CreateServerInput };
+export type { CreateServerInputs, CreateServerDeps };

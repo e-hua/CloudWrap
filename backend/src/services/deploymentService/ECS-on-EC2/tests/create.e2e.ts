@@ -1,6 +1,24 @@
-import {createServer, type CreateServerInput} from "./create.js";
+import {createServer, type CreateServerDeps, type CreateServerInput} from "../create.js";
 import {manualDeploy} from "@/services/deploymentService/pipelines/trigger-deployment.js";
 import {assumeRole} from "@/services/assumeRoleService.js";
+import {serviceCreator} from "@/db/index.js";
+import {runTofu, runTofuAndCollect} from "@/services/deploymentService/runTofu.js";
+import {mkdtemp, rm} from "fs/promises";
+import {copy} from "fs-extra";
+import {tmpdir} from "os";
+import { randomBytes } from "crypto";
+
+const createServiceDeps: CreateServerDeps = {
+  serviceCreator,
+  runTofu,
+  runTofuAndCollect,
+  mkdtemp,
+  copy,
+  rm,
+  tmpdir,
+  randomBytes
+}
+
 
 async function main() {
   console.log("--- STARTING ECS ON EC2 DEPLOYMENT ---");
@@ -23,7 +41,7 @@ async function main() {
   try {
     const logCallback = (elem: any) => console.log(elem.data);
 
-    await createServer(testInputs, logCallback);
+    await createServer({inputs: testInputs, onStreamCallback: logCallback}, createServiceDeps);
     const credentials = await assumeRole()
     await manualDeploy(credentials, `${testInputs.projectName}-pipeline`)
     console.log("\n--- TEST DEPLOYMENT SUCCEEDED ---");

@@ -1,16 +1,16 @@
 import express from "express";
 import {z} from "zod";
-import { createStaticSite } from "@/services/deploymentService/static-site/create.js";
+import {createStaticSite, type CreateStaticSiteDeps} from "@/services/deploymentService/static-site/create.js";
 import { getErrorMessage } from "@/utils/errors.js";
 import {
   createServer,
   type CreateServerInput,
 } from "@/services/deploymentService/ECS-on-EC2/create.js";
-import type { StreamData } from "@/services/deploymentService/runTofu.js";
+import {runTofu, runTofuAndCollect, type StreamData} from "@/services/deploymentService/runTofu.js";
 import { sseMiddleware } from "@/middleware/sse.middleware.js";
 import {type DBServiceQueryFilter, dbServiceQueryFilterSchema} from "@/db/queries/Services/Services.schema.js";
 import type {DBServiceType} from "@/db/queries/Services/Services.types.js"
-import {serviceReader} from "@/db/index.js";
+import {serviceReader, serviceDeleter, serviceCreator, serviceUpdater} from "@/db/index.js";
 import {fromZodError} from "zod-validation-error";
 import {
   type CreateServicePayload,
@@ -20,10 +20,16 @@ import {
   type UpdateServicePayload,
   updateServicePayloadSchema,
 } from "@/services/deploymentService/deployment.schema.js";
-import {updateStaticSite} from "@/services/deploymentService/static-site/update.js";
+import {updateStaticSite, type UpdateStaticSiteDeps} from "@/services/deploymentService/static-site/update.js";
 import {updateServer} from "@/services/deploymentService/ECS-on-EC2/update.js";
-import {deleteStaticSite} from "@/services/deploymentService/static-site/delete.js";
+import {deleteStaticSite, type DeleteStaticSiteDeps} from "@/services/deploymentService/static-site/delete.js";
 import {deleteServer} from "@/services/deploymentService/ECS-on-EC2/delete.js";
+import {mkdtemp, rm} from "fs/promises";
+import {copy} from "fs-extra";
+import {tmpdir} from "os";
+import {manualDeploy} from "@/services/deploymentService/pipelines/trigger-deployment.js";
+import {assumeRole} from "@/services/assumeRoleService.js";
+import {randomBytes} from "crypto";
 
 const router = express.Router();
 const {readServiceById, readServicesByFilter} = serviceReader;
@@ -80,6 +86,17 @@ router.get("/:id", (req, res) => {
 // Create service with given information
 // POST: /services
 // Notice that we need to use SSE middleware to send all the logs here
+const createServiceDeps = {
+  serviceCreator,
+  runTofu,
+  runTofuAndCollect,
+  mkdtemp,
+  copy,
+  rm,
+  tmpdir,
+  randomBytes
+}
+
 router.post("/", sseMiddleware, async (req, res) => {
   const logCallback = (elem: StreamData) => {
     console.log(elem.data);
@@ -95,9 +112,19 @@ router.post("/", sseMiddleware, async (req, res) => {
     const createServicePayload: CreateServicePayload = createServiceRequestResult.data;
 
     if (createServicePayload.type === "static-site") {
-      await createStaticSite(createServicePayload, logCallback)
+      await createStaticSite(
+        {
+          inputs: createServicePayload,
+          onStreamCallback: logCallback
+        },
+        createServiceDeps)
     } else {
-      await createServer(createServicePayload, logCallback)
+      await createServer(
+        {
+          inputs: createServicePayload,
+          onStreamCallback: logCallback
+        },
+        createServiceDeps)
     }
 
     res.sseEnd({ message: "Server deployment successful!" });
@@ -108,6 +135,19 @@ router.post("/", sseMiddleware, async (req, res) => {
 
 // Update service according to the id in the path params
 // PATCH: /services/{id}
+const updateServiceDeps = {
+  serviceUpdater,
+  serviceReader,
+  runTofu,
+  runTofuAndCollect,
+  mkdtemp,
+  copy,
+  rm,
+  tmpdir,
+  manualDeploy,
+  assumeRole
+}
+
 router.patch("/:id", sseMiddleware, async (req, res) => {
   const logCallback = (elem: StreamData) => {
     console.log(elem.data);
@@ -131,9 +171,21 @@ router.patch("/:id", sseMiddleware, async (req, res) => {
     const updateServicePayload: UpdateServicePayload = updateServiceRequestResult.data;
 
     if (updateServicePayload.type === "static-site") {
-      await updateStaticSite(id, updateServicePayload, logCallback)
+      await updateStaticSite(
+        {
+          service_id: id,
+          inputs: updateServicePayload,
+          onStreamCallback: logCallback
+        },
+        updateServiceDeps)
     } else {
-      await updateServer(id, updateServicePayload, logCallback)
+      await updateServer(
+        {
+          service_id: id,
+          inputs: updateServicePayload,
+          onStreamCallback: logCallback
+        },
+        updateServiceDeps)
     }
 
     res.sseEnd({ message: "Server deployment successful!" });
@@ -145,6 +197,15 @@ router.patch("/:id", sseMiddleware, async (req, res) => {
 
 // Delete service with that id
 // DELETE: /services/{id}
+const deleteServiceDeps = {
+  serviceReader,
+  serviceDeleter,
+  runTofu,
+  mkdtemp,
+  copy,
+  rm,
+  tmpdir
+}
 
 router.delete("/:id", sseMiddleware, async (req, res) => {
   const logCallback = (elem: StreamData) => {
@@ -169,9 +230,19 @@ router.delete("/:id", sseMiddleware, async (req, res) => {
     const deleteServicePayload: DeleteServicePayload = deleteServiceRequestResult.data;
 
     if (deleteServicePayload.type === "static-site") {
-      await deleteStaticSite(id, deleteServicePayload.githubConnectionArn, logCallback)
+      await deleteStaticSite({
+            service_id: id,
+            githubConnectionArn: deleteServicePayload.githubConnectionArn,
+            onStreamCallback: logCallback
+          },
+          deleteServiceDeps)
     } else {
-      await deleteServer(id, deleteServicePayload.githubConnectionArn, logCallback)
+      await deleteServer({
+          service_id: id,
+          githubConnectionArn: deleteServicePayload.githubConnectionArn,
+          onStreamCallback: logCallback
+        },
+        deleteServiceDeps)
     }
 
     res.sseEnd({ message: "Server deployment successful!" });

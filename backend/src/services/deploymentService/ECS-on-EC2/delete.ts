@@ -1,6 +1,3 @@
-import { mkdtemp, rm } from "fs/promises";
-import { tmpdir } from "os";
-import { copy } from "fs-extra";
 import path from "path";
 import {
   STRICT_TF_STATE_BUCKET as state_bucket_name,
@@ -8,21 +5,34 @@ import {
   STRICT_TF_ROLE_ARN as tf_role_arn,
 } from "@/config/aws.config.js";
 import { getErrorMessage } from "@/utils/errors.js";
-import {serviceCreator, serviceDeleter, serviceReader, serviceUpdater} from "@/db/index.js";
 
 import { fileURLToPath } from "url";
-import {runTofu, runTofuAndCollect, type StreamData} from "../runTofu.js";
+import {type StreamData} from "../runTofu.js";
 import type {DBServerType, DBSiteInput, DBSiteType} from "@/db/queries/Services/Services.types.js";
-import {manualDeploy} from "@/services/deploymentService/pipelines/trigger-deployment.js";
-import {assumeRole} from "@/services/assumeRoleService.js";
+import type {ServiceOperationDeps} from "@/services/deploymentService/deployment.types.js";
+import Database from "better-sqlite3";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-async function deleteServer(
+type DeleteServerDeps = ServiceOperationDeps & {
+  serviceReader: {
+    readServiceById: (serviceId: (number | bigint)) => (DBServerType | DBSiteType)
+  };
+  serviceDeleter: {
+    deleteServiceTransaction: Database.Transaction<(id: (number | bigint)) => (bigint | number)>
+  }
+}
+
+type DeleteServerInputs = {
   service_id: number,
   githubConnectionArn: string,
   onStreamCallback: (data: StreamData) => void
+}
+
+async function deleteServer(
+  {service_id, githubConnectionArn, onStreamCallback} : DeleteServerInputs,
+  {serviceReader, serviceDeleter, runTofu, mkdtemp, copy, rm, tmpdir}: DeleteServerDeps
 ): Promise<void> {
   const templatePath = path.join(
     __dirname,
@@ -129,3 +139,4 @@ async function deleteServer(
 }
 
 export { deleteServer };
+export type {DeleteServerDeps, DeleteServerInputs}
