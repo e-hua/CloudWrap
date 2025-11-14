@@ -23,8 +23,12 @@ class QueryObserver<T> {
   fetch() {
     // time passed in ms
     const timeElapsed = Date.now() - this.query.state.lastUpdated.getTime();
-    // Only fetch when the data is too old
-    if (!this.query.state.data || timeElapsed > this.staleTime) {
+    // Only fetch when the data is too old, or not ready
+    if (
+      (this.query.state.status !== "loading" &&
+        this.query.state.status !== "success") ||
+      timeElapsed > this.staleTime
+    ) {
       this.query.fetch();
     }
   }
