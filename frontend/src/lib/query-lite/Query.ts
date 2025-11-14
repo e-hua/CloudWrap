@@ -13,6 +13,12 @@ type Subscriber = {
   notify: () => void;
 };
 
+type QueryOptions<T> = {
+  queryKey: string;
+  queryFunction: () => Promise<T>;
+  staleTime?: number;
+};
+
 class Query<T> {
   // The "internal" promise we're using to track the status of ongoing fetching
   promise: Promise<void> | undefined = undefined;
@@ -25,7 +31,7 @@ class Query<T> {
   // This is an array of Objects with "notify" method
   subscribers: Subscriber[];
 
-  constructor(queryKey: string, queryFunction: () => Promise<T>) {
+  constructor({ queryKey, queryFunction }: QueryOptions<T>) {
     this.queryKey = queryKey;
     this.queryFunction = queryFunction;
     this.subscribers = [];
@@ -101,4 +107,4 @@ class Query<T> {
 }
 
 export { Query };
-export type { Status, QueryState, Subscriber };
+export type { Status, QueryState, Subscriber, QueryOptions };
