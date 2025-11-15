@@ -1,4 +1,4 @@
-import { createContext, useEffect } from "react";
+import { createContext, useContext, useEffect } from "react";
 import type { ReactNode } from "react";
 
 import type { QueryClient } from "./QueryClient";
@@ -38,4 +38,16 @@ function QueryClientProvider({
   );
 }
 
-export { QueryClientContext, QueryClientProvider };
+function useQueryClient() {
+  const queryClient = useContext(QueryClientContext);
+
+  if (!queryClient) {
+    throw new Error(
+      "useQueryClient hook must be used within QueryCientProvider"
+    );
+  }
+
+  return queryClient;
+}
+
+export { QueryClientContext, QueryClientProvider, useQueryClient };

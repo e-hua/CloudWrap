@@ -12,7 +12,10 @@ type QueryState<T> = {
 };
 
 type Subscriber = {
+  // This is to trigger the re-rendering of the component our observers are attached to
   notify: () => void;
+
+  // This is to trigger the re-fetching of the query (under the staletime rule)
   fetch: () => void;
 };
 
@@ -128,6 +131,9 @@ class Query<T> {
   scheduleGC() {
     this.gcTimeout = setTimeout(() => {
       this.queryClient.removeQuery(this);
+
+      // Query removed, remind the client
+      this.queryClient.notify();
     }, this.cacheTime);
   }
 
@@ -140,6 +146,9 @@ class Query<T> {
   setState(updater: (oldState: QueryState<T>) => QueryState<T>) {
     this.state = updater(this.state);
     this.subscribers.forEach((subscriber) => subscriber.notify());
+
+    // Query state updated, remind the client
+    this.queryClient.notify();
   }
 }
 
