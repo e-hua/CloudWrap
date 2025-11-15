@@ -11,12 +11,12 @@ class QueryObserver<T> {
 
   constructor(
     queryClient: QueryClient,
-    { queryKey, queryFunction, staleTime = 0 }: QueryOptions<T>
+    { queryKey, queryFunction, staleTime, cacheTime }: Required<QueryOptions<T>>
   ) {
     this.queryClient = queryClient;
     this.queryKey = queryKey;
     this.queryFunction = queryFunction;
-    this.query = queryClient.getQuery({ queryKey, queryFunction });
+    this.query = queryClient.getQuery({ queryKey, queryFunction, cacheTime });
     this.staleTime = staleTime;
   }
 

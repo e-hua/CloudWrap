@@ -1,3 +1,5 @@
+import type { QueryClient } from "./QueryClient";
+
 type Status = "idle" | "loading" | "success" | "error";
 
 type QueryState<T> = {
@@ -17,6 +19,7 @@ type QueryOptions<T> = {
   queryKey: string;
   queryFunction: () => Promise<T>;
   staleTime?: number;
+  cacheTime?: number;
 };
 
 class Query<T> {
@@ -31,7 +34,23 @@ class Query<T> {
   // This is an array of Objects with "notify" method
   subscribers: Subscriber[];
 
-  constructor({ queryKey, queryFunction }: QueryOptions<T>) {
+  // How long the query is going to stay in the client
+  // if there're no observer attached to it
+  cacheTime: number;
+  gcTimeout: number | undefined = undefined;
+  queryClient: QueryClient;
+
+  constructor(
+    queryClient: QueryClient,
+    {
+      queryKey,
+      queryFunction,
+      cacheTime,
+    }: Required<Omit<QueryOptions<T>, "staleTime">>
+  ) {
+    // This is for garbage collection triggering
+    this.queryClient = queryClient;
+
     this.queryKey = queryKey;
     this.queryFunction = queryFunction;
     this.subscribers = [];
@@ -42,6 +61,7 @@ class Query<T> {
       // This creates an dummy date, indicating that you must refetch the data
       lastUpdated: new Date(2000, 1, 1),
     };
+    this.cacheTime = cacheTime;
   }
 
   // We use only call this fetch function when we want to re-fetch fresh data
@@ -88,14 +108,30 @@ class Query<T> {
     return this.promise;
   }
 
+  // Only schedule GC when there're no observer subscribing
   subscribe(subscriber: Subscriber): () => void {
     this.subscribers.push(subscriber);
+    this.unscheduleGC();
 
     const unsubscribe = () => {
       this.subscribers = this.subscribers.filter((elem) => elem !== subscriber);
+
+      if (this.subscribers.length === 0) {
+        this.scheduleGC();
+      }
     };
 
     return unsubscribe;
+  }
+
+  scheduleGC() {
+    this.gcTimeout = setTimeout(() => {
+      this.queryClient.removeQuery(this);
+    }, this.cacheTime);
+  }
+
+  unscheduleGC() {
+    clearTimeout(this.gcTimeout);
   }
 
   // any update on the state will notify the observer

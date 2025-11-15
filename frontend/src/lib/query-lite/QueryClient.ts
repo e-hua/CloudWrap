@@ -7,14 +7,18 @@ class QueryClient {
     this.queries = new Map();
   }
 
-  getQuery<T>({ queryKey, queryFunction }: QueryOptions<T>): Query<T> {
+  getQuery<T>({
+    queryKey,
+    queryFunction,
+    cacheTime,
+  }: Required<Omit<QueryOptions<T>, "staleTime">>): Query<T> {
     const queryFound = this.queries.get(queryKey);
 
     if (queryFound) {
       return queryFound as Query<T>;
     }
 
-    const newQuery = new Query<T>({ queryKey, queryFunction });
+    const newQuery = new Query<T>(this, { queryKey, queryFunction, cacheTime });
     this.queries.set(queryKey, newQuery);
 
     return newQuery;
