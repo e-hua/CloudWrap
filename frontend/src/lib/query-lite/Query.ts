@@ -13,6 +13,7 @@ type QueryState<T> = {
 
 type Subscriber = {
   notify: () => void;
+  fetch: () => void;
 };
 
 type QueryOptions<T> = {

@@ -10,7 +10,7 @@ function useQuery<T>({
   queryKey,
   queryFunction,
   staleTime = 0,
-  cacheTime = 5000,
+  cacheTime = 5 * 60 * 1000,
 }: QueryOptions<T>): QueryState<T> {
   const queryClient = useContext(QueryClientContext);
 
