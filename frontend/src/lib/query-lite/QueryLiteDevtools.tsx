@@ -16,7 +16,7 @@ function QueryLiteDevtools() {
   }, [client, rerender]);
 
   return (
-    <div className="bg-black text-white divide-solid divide-y-2 divide-gray-800">
+    <div className="sticky bottom-0 bg-black text-white divide-solid divide-y-2 divide-gray-800">
       {[...client.queries.values()]
         .sort((a, b) => (a.queryKey > b.queryKey ? 1 : -1))
         .map((query) => {
