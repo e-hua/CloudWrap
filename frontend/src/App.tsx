@@ -7,6 +7,7 @@ import StorageInfoPage from "@/pages/StorageInfoPage";
 import ThemeProvider from "@/hooks/UseTheme";
 import InstancePage from "@/pages/InstancePage";
 import CostDashboardPage from "@/pages/CostDashboardPage";
+import { TestDashboard } from "@/lib/query-lite/tests/TestDashboard";
 
 function App() {
   return (
@@ -22,6 +23,7 @@ function App() {
             <Route path="/storage/:storageName" element={<StorageInfoPage />} />
             <Route path="/storage" element={<StoragePage />} />
             <Route path="/database" element={<></>} />
+            <Route path="/testdashboard" element={<TestDashboard />} />
           </Route>
           <Route
             path="*"
