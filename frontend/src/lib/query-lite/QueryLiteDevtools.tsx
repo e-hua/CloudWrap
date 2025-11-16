@@ -22,6 +22,7 @@ function QueryLiteDevtools() {
         .map((query) => {
           return (
             <div
+              data-testid={query.queryKey}
               key={query.queryKey}
               className="p-2 flex flex-row justify-between items-center"
             >

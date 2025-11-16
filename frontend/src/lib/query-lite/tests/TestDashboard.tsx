@@ -1,3 +1,4 @@
+import "@/tailwind.css";
 import {
   QueryClient,
   QueryClientProvider,
@@ -62,6 +63,7 @@ function usePost(postId: number) {
       ).json();
       return data;
     },
+    cacheTime: 500,
   });
 }
 
@@ -138,7 +140,7 @@ function Post({
         className="px-2 py-1 text-lg font-bold bg-blue-500 text-white"
         onClick={() => setPostId(-1)}
       >
-        &lt &lt == Back
+        Back
       </div>
       <div className="mt-2">
         {postQuery.status === "idle" ? (

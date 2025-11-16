@@ -76,6 +76,7 @@ class Query<T> {
       return this.promise;
     }
 
+    // Calling an async function without await gives you a promise
     this.promise = (async () => {
       try {
         this.setState((oldState) => {
