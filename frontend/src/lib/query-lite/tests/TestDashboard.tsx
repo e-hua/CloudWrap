@@ -72,7 +72,7 @@ function useUpdatePost() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFunction: async (postId: number) => {
+    mutationFunction: async () => {
       // Just a dummy function to trigger the re-fetching
     },
     onSuccess: () => queryClient.invalidateQuery("posts"),

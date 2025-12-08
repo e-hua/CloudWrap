@@ -5,7 +5,6 @@ import { describe, it, beforeEach, expect, vi, afterEach } from "vitest";
 import { render } from "vitest-browser-react";
 import { page } from "vitest/browser";
 import { TestDashboard } from "./TestDashboard";
-import { sleep } from "@/utils/sleep";
 
 // Mock the sleep function to make it returns instantly
 vi.mock("@/utils/sleep", () => ({
