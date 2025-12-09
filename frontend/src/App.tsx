@@ -9,6 +9,7 @@ import InstancePage from "@/pages/InstancePage";
 import CostDashboardPage from "@/pages/CostDashboardPage";
 import { TestDashboard } from "@/lib/query-lite/tests/TestDashboard";
 import TestLogViewPage from "./pages/TestLogViewPage";
+import LogViewPage from "./pages/LogViewPage";
 
 function App() {
   return (
@@ -26,6 +27,7 @@ function App() {
             <Route path="/database" element={<></>} />
             <Route path="/testdashboard" element={<TestDashboard />} />
             <Route path="/testSSE" element={<TestLogViewPage />} />
+            <Route path="/SSE" element={<LogViewPage />} />
           </Route>
           <Route
             path="*"
