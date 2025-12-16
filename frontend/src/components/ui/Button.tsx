@@ -11,16 +11,19 @@ const BUTTON_MAPPING = {
   disabled: {
     className: "bg-sidebar-strong text-text-primary disabled",
   },
+  destructive: {
+    className:
+      "bg-button-destructive dark:bg-button-destructive/60 text-white hover:bg-button-destructive/90 dark:hover:bg-button-destructive/50",
+  },
 };
 
 const baseStyles = `flex flex-row gap-2 
   items-center justify-center 
   rounded-md border-1 border-sidebar-border
-  py-1 px-2`;
+  py-2 px-3`;
 
 type ButtonProps = {
-  variation: "secondary" | "default" | "disabled";
-  text: string;
+  variation: "secondary" | "default" | "disabled" | "destructive";
   onClick: () => unknown;
   disabled?: boolean;
 } & BaseComponentProps;
@@ -29,7 +32,6 @@ export default function Button({
   children,
   variation,
   className = "",
-  text,
   onClick,
   disabled,
 }: ButtonProps) {
@@ -42,12 +44,12 @@ export default function Button({
       className={clsx(
         baseStyles,
         BUTTON_MAPPING[variation].className,
+        !disabled || "cursor-not-allowed",
         className
       )}
       onClick={onClick}
     >
       {children}
-      <p>{text}</p>
     </div>
   );
 }

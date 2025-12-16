@@ -17,7 +17,7 @@ import {
   GetLogEventsCommand,
   type GetLogEventsCommandOutput,
 } from "@aws-sdk/client-cloudwatch-logs";
-import {sleep} from "@/utils/sleep.js";
+import { sleep } from "@/utils/sleep.js";
 
 function createPipeLineClient(credential: StrictCredentials) {
   return new CodePipelineClient({
@@ -57,13 +57,12 @@ type LogData = {
 };
 
 type PipelineLogData = LogData & {
-      source: "pipeline-status" | "sys-failure" | "sys-info";
-    };
+  source: "pipeline-status" | "sys-failure" | "sys-info";
+};
 
 type BuildingLogData = LogData & {
-      source: "build-status" | "build-logs" | "sys-failure" | "sys-info";
-    };
-
+  source: "build-logs" | "sys-failure" | "sys-info";
+};
 
 // Keeps sending all the statuses in the pipeline
 // Until the pipeline is finished running
@@ -197,7 +196,10 @@ async function streamBuildLogs(
         );
 
         for (const event of logs?.events ?? []) {
-          onStream({ source: "build-logs", data: event.message ?? "No message" });
+          onStream({
+            source: "build-logs",
+            data: event.message ?? "No message",
+          });
         }
 
         if (logs.nextForwardToken && logs.nextForwardToken !== next_token) {

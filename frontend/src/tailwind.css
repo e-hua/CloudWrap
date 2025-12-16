@@ -25,6 +25,7 @@
   --color-surface-primary: var(--surface-primary);
   --color-warning: var(--warning);
   --color-destructive: var(--destructive);
+  --color-button-destructive: lab(48.4493% 77.4328 61.5452);
 
   --color-success: var(--success);
   --color-success-background: var(--success-background);
@@ -50,6 +51,8 @@
   --color-chart-gray: var(--chart-gray);
   --color-chart-teal: var(--chart-teal);
   --color-chart-olive: var(--chart-olive);
+
+  --color-badge: var(--bg-badge);
 }
 
 [data-theme="light"] {
@@ -98,6 +101,8 @@
   --chart-gray: rgba(110, 110, 110, 0.9); /* gray */
   --chart-teal: rgba(0, 150, 150, 0.9); /* teal */
   --chart-olive: rgba(128, 128, 0, 0.9); /* olive */
+
+  --bg-badge: #e6e6e6;
 }
 
 [data-theme="dark"] {
@@ -147,6 +152,8 @@
   --chart-gray: rgba(180, 180, 180, 0.9); /* gray */
   --chart-teal: rgba(0, 200, 200, 0.9); /* teal */
   --chart-olive: rgba(180, 180, 80, 0.9); /* olive */
+
+  --bg-badge: #292929;
 }
 
 html,

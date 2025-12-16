@@ -261,16 +261,12 @@ export default function InstancePage() {
         />
 
         <div className="flex flex-row justify-end gap-5">
-          <Button
-            text={"Cancel"}
-            variation={"secondary"}
-            onClick={modalCleanUp}
-          />
-          <Button
-            text={"Create"}
-            variation={"default"}
-            onClick={onCreateNewInstance}
-          />
+          <Button variation={"secondary"} onClick={modalCleanUp}>
+            <p>Cancel</p>
+          </Button>
+          <Button variation={"default"} onClick={onCreateNewInstance}>
+            <p>Create</p>
+          </Button>
         </div>
       </div>
     </div>
@@ -313,3 +309,5 @@ export default function InstancePage() {
     </div>
   );
 }
+
+export { InstanceTypeList };

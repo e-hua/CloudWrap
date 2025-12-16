@@ -124,6 +124,7 @@ class Query<T> {
       if (this.subscribers.length === 0) {
         this.scheduleGC();
       }
+      this.queryClient.notify();
     };
 
     return unsubscribe;

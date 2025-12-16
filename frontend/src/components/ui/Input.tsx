@@ -5,8 +5,14 @@ type InputProps = {
   value: string;
   onChange: ChangeEventHandler<HTMLInputElement>;
   className?: string;
+  placeholder?: string;
 };
-export default function Input({ value, onChange, className }: InputProps) {
+export default function Input({
+  value,
+  onChange,
+  className,
+  placeholder,
+}: InputProps) {
   return (
     <input
       // sync it with react state
@@ -22,6 +28,7 @@ export default function Input({ value, onChange, className }: InputProps) {
         p-1 rounded-md`,
         className
       )}
+      placeholder={placeholder}
     />
   );
 }

@@ -1,5 +1,5 @@
 import { BACKEND_ENDPOINT_URL } from "@/config/constants";
-import Xterm from "@/lib/log-stream-lite/Xterm";
+import Xterm from "@/lib/log-stream-lite/archive_components/Xterm";
 
 const testSSEURL = `${BACKEND_ENDPOINT_URL}testSSE/`;
 

@@ -2,8 +2,10 @@ import { createContext, useContext, useState, useEffect } from "react";
 import React from "react";
 import Cookies from "js-cookie";
 
-const ThemeContext = createContext("dark");
-const ThemeSetterContext = createContext((val: string) => {
+type ThemeType = "dark" | "light";
+
+const ThemeContext = createContext<ThemeType>("dark");
+const ThemeSetterContext = createContext((val: ThemeType) => {
   console.log(val);
 });
 
@@ -12,8 +14,8 @@ export default function ThemeProvider({
 }: {
   children: React.ReactNode;
 }) {
-  const [currentState, setCurrentState] = useState(() => {
-    return Cookies.get("theme") || "light";
+  const [currentState, setCurrentState] = useState<ThemeType>(() => {
+    return (Cookies.get("theme") as ThemeType | undefined) || "light";
   });
 
   useEffect(() => {
@@ -47,3 +49,5 @@ export function useThemeSetter() {
   }
   return useContext(ThemeSetterContext);
 }
+
+export type { ThemeType };

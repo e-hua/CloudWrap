@@ -7,7 +7,7 @@ Adding SSE callbacks to the respnse object
 function sseMiddleware(req: Request, res: Response, next: NextFunction) {
   let alive = true;
 
-  req.on("close", () => {
+  res.on("close", () => {
     alive = false;
     console.log("Client closed the SSE connection");
   });

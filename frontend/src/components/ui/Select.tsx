@@ -153,7 +153,7 @@ function SelectContent({
         absolute bg-sidebar-background w-full mt-1
         border-1 border-sidebar-border 
         p-1.5 rounded-md
-        max-h-50 overflow-scroll`,
+        max-h-30 overflow-scroll`,
         className
       )}
     >

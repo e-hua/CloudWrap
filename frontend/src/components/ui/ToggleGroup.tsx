@@ -8,7 +8,7 @@ type option = {
 type ToggleGroupProps = {
   options: option[];
   value: string;
-  onValueChange: (value: string) => void;
+  onValueChange: (value: any) => void;
   className?: string;
 };
 export default function ToggleGroup({
@@ -20,10 +20,12 @@ export default function ToggleGroup({
   return (
     <div
       className={clsx(
-        `flex flex-row
-bg-card border-[1px] border-card-border 
-text-sm text-text-primary text-wrap
-rounded-lg`,
+        `
+        inline-flex flex-row
+        bg-card border-[1px] border-card-border 
+        text-sm text-text-primary text-wrap
+        rounded-lg
+        overflow-hidden`,
         className
       )}
     >

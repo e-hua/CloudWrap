@@ -10,32 +10,56 @@ import CostDashboardPage from "@/pages/CostDashboardPage";
 import { TestDashboard } from "@/lib/query-lite/tests/TestDashboard";
 import TestLogViewPage from "./pages/TestLogViewPage";
 import LogViewPage from "./pages/LogViewPage";
+import ServicePage from "./pages/ServicePage/ServicePage";
+import {
+  QueryClient,
+  QueryClientProvider,
+  QueryLiteDevtools,
+} from "./lib/query-lite";
+import NewServicePage from "./pages/ServicePage/NewServicePage";
+import ServiceInfoPage from "./pages/ServicePage/ServiceInfoPage";
+
+const queryClient = new QueryClient();
 
 function App() {
   return (
-    <WorkspaceProvider>
-      <ThemeProvider>
-        <Routes>
-          <Route path="/" element={<Layout />}>
-            <Route path="/dashboard" element={<></>} />
-            <Route path="/bills" element={<CostDashboardPage />} />
-            <Route path="/credentials" element={<></>} />
-            <Route path="/projects" element={<></>} />
-            <Route path="/instances" element={<InstancePage />} />
-            <Route path="/storage/:storageName" element={<StorageInfoPage />} />
-            <Route path="/storage" element={<StoragePage />} />
-            <Route path="/database" element={<></>} />
-            <Route path="/testdashboard" element={<TestDashboard />} />
-            <Route path="/testSSE" element={<TestLogViewPage />} />
-            <Route path="/SSE" element={<LogViewPage />} />
-          </Route>
-          <Route
-            path="*"
-            element={<p className="text-accent">This is a landing page</p>}
-          />
-        </Routes>
-      </ThemeProvider>
-    </WorkspaceProvider>
+    <QueryClientProvider client={queryClient}>
+      <WorkspaceProvider>
+        <ThemeProvider>
+          <Routes>
+            <Route path="/" element={<Layout />}>
+              <Route path="/dashboard" element={<></>} />
+              <Route path="/bills" element={<CostDashboardPage />} />
+              <Route path="/credentials" element={<></>} />
+              <Route path="/services" element={<ServicePage />} />
+              <Route path="/services/new" element={<NewServicePage />} />
+              <Route
+                path="/services/:serviceNumber"
+                element={<ServiceInfoPage />}
+              />
+
+              <Route path="/instances" element={<InstancePage />} />
+              <Route
+                path="/storage/:storageName"
+                element={<StorageInfoPage />}
+              />
+              <Route path="/storage" element={<StoragePage />} />
+              <Route path="/database" element={<></>} />
+              <Route path="/testdashboard" element={<TestDashboard />} />
+              <Route path="/testSSE" element={<TestLogViewPage />} />
+              <Route path="/SSE" element={<LogViewPage />} />
+            </Route>
+            <Route
+              path="*"
+              element={<p className="text-accent">This is a landing page</p>}
+            />
+          </Routes>
+        </ThemeProvider>
+      </WorkspaceProvider>
+      <div className="fixed bottom-0 w-full">
+        <QueryLiteDevtools />
+      </div>
+    </QueryClientProvider>
   );
 }
 

@@ -64,16 +64,12 @@ export default function StoragePage() {
           />
         </div>
         <div className="flex flex-row justify-end gap-5">
-          <Button
-            text={"Cancel"}
-            variation={"secondary"}
-            onClick={() => setModalOpen(false)}
-          />
-          <Button
-            text={"Create"}
-            variation={"default"}
-            onClick={onCreateNewBucket}
-          />
+          <Button variation={"secondary"} onClick={() => setModalOpen(false)}>
+            <p>Cancel</p>
+          </Button>
+          <Button variation={"default"} onClick={onCreateNewBucket}>
+            <p>Create</p>
+          </Button>
         </div>
       </div>
     </div>

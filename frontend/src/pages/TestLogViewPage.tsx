@@ -1,4 +1,4 @@
-import { useLogStream } from "@/lib/log-stream-lite/useLogStream";
+import { useLogStream } from "@/lib/log-stream-lite/archive_components/useLogStream";
 import { useLayoutEffect, useRef, useState } from "react";
 import { BACKEND_ENDPOINT_URL } from "@/config/constants";
 

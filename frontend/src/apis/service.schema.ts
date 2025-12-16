@@ -11,8 +11,7 @@ const createServiceSchema = z.object({
   groupId: z.number().optional(),
 });
 
-const createSiteSchema = z.object({
-  ...createServiceSchema.shape,
+const staticSiteAttributesSchema = z.object({
   buildCommand: z.string(),
   publishDirectory: z.string(),
 
@@ -20,11 +19,20 @@ const createSiteSchema = z.object({
   acmCertificateArn: z.union([z.string(), z.null()]).optional(),
 });
 
-const createServerSchema = z.object({
-  ...createServiceSchema.shape,
+const serverAttributesSchema = z.object({
   container_port: z.number(),
   instance_type: z.string(),
   dockerfile_path: z.string(),
+});
+
+const createSiteSchema = z.object({
+  ...createServiceSchema.shape,
+  ...staticSiteAttributesSchema.shape,
+});
+
+const createServerSchema = z.object({
+  ...createServiceSchema.shape,
+  ...serverAttributesSchema.shape,
 });
 
 // Only keep the githubConnectionArn required
@@ -73,6 +81,9 @@ const deleteServicePayloadSchema = z.object({
 });
 
 // These are for the service layer
+type StaticSiteAttributesType = z.infer<typeof staticSiteAttributesSchema>;
+type ServerAttributesType = z.infer<typeof serverAttributesSchema>;
+
 type CreateServiceInput = z.infer<typeof createServiceSchema>;
 type CreateStaticSiteInput = z.infer<typeof createSiteSchema>;
 type CreateServerInput = z.infer<typeof createServerSchema>;
@@ -105,6 +116,7 @@ export {
 };
 export { deleteServicePayloadSchema };
 
+export type { ServerAttributesType, StaticSiteAttributesType };
 export type {
   CreateStaticSitePayload,
   CreateServerPayload,
@@ -116,3 +128,4 @@ export type {
   UpdateServicePayload,
 };
 export type { DeleteServicePayload };
+export type { CreateServiceInput };

@@ -2,7 +2,7 @@ import {
   LayoutDashboard as Dashboard,
   CreditCard as Bills,
   KeyRound as Credentials,
-  Package as Projects,
+  Package as Services,
   Cpu as EC2,
   Cylinder as S3,
   Database as RDS,
@@ -39,7 +39,7 @@ export default function Sidebar() {
         <h4 className="text-neutral-400 text-sm font-semibold mx-2 my-2">
           Build
         </h4>
-        <SidebarIcon icon={<Projects />} name="Projects" />
+        <SidebarIcon icon={<Services />} name="Services" beta />
         <SidebarIcon icon={<EC2 />} name="Instances" beta />
         <SidebarIcon icon={<S3 />} name="Storage" beta />
         <SidebarIcon icon={<RDS />} name="Database" />

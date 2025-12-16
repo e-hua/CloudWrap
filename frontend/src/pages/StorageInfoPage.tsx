@@ -140,10 +140,10 @@ function ControlPanel({
           };
           input.click();
         }}
-        text="Upload"
         variation={"default"}
       >
         <Upload />
+        <p>Upload</p>
       </Button>
 
       <Button
@@ -166,11 +166,11 @@ function ControlPanel({
             })();
           }
         }}
-        text="Download"
         variation={"default"}
         disabled={selectedNameCount !== 1}
       >
         <Download />
+        <p>Download</p>
       </Button>
     </div>
   );
