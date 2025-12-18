@@ -1,11 +1,14 @@
-import type { UpdateServicePayload } from "@/apis/service.schema";
-import { fetchService } from "@/apis/services";
-import type { DBServerType, DBServiceType } from "@/apis/services.types";
+import type { UpdateServicePayload } from "@/apis/services/service.schema";
+import { fetchService } from "@/apis/services/services";
+import type {
+  DBServerType,
+  DBServiceType,
+} from "@/apis/services/services.types";
 import Button from "@/components/ui/Button";
 import { Select, SelectTrigger, SelectValue } from "@/components/ui/Select";
 import { useMutation, useQuery, useQueryClient } from "@/lib/query-lite";
 import { SiGithub } from "@icons-pack/react-simple-icons";
-import { AppWindow, Copy, GitBranch, Server } from "lucide-react";
+import { Copy, GitBranch } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 import { useParams } from "react-router";
 import { InstanceTypeList } from "../InstancePage";
@@ -21,7 +24,7 @@ function EntryWithValue({ name, children }: EntryWithValueProps) {
   return (
     <div className="flex flex-col text-sm">
       <p className="text-text-secondary">{name}</p>
-      {children}
+      <div className="text-wrap">{children}</div>
     </div>
   );
 }
@@ -59,7 +62,7 @@ function BottomBorderInput({
   }
 }
 
-function ServiceInfoPage() {
+function ServiceSettingsPage() {
   const { serviceNumber } = useParams();
 
   const { data } = useQuery({
@@ -109,219 +112,170 @@ function ServiceInfoPage() {
   }
 
   return (
-    <div className="w-full">
-      <header
+    <div className="w-full px-5 pt-10 flex flex-col gap-10">
+      <div
         className="
-      w-full 
-      flex flex-row 
-      justify-between
-      items-center border-b-badge border-b-1 py-10 px-5"
-      >
-        <div className="flex flex-col">
-          <div
-            className="
-          text-sm text-text-secondary 
-          flex flex-row gap-1
-          items-center "
-          >
-            {data.type === "server" ? (
-              <Server size={16} />
-            ) : (
-              <AppWindow size={16} />
-            )}
-            <p className="font-mono">{data.type.toUpperCase()}</p>
-          </div>
-          <h1 className="text-text-primary text-3xl">{data.name}</h1>
-        </div>
-        <div className="flex flex-row gap-2">
-          <Button
-            variation="secondary"
-            onClick={() =>
-              window.open(`https://github.com/${data.repoId}`, "_blank")
-            }
-          >
-            <SiGithub size={14} className="text-text-primary" />
-            <p> Repository </p>
-          </Button>
-
-          <Button
-            variation="default"
-            onClick={() =>
-              window.open(
-                data.cloudFrontDomainName.startsWith("https://")
-                  ? data.cloudFrontDomainName
-                  : "https://" + data.cloudFrontDomainName,
-                "_blank"
-              )
-            }
-          >
-            <p>Visit</p>
-          </Button>
-
-          <Button
-            variation="default"
-            onClick={() => {
-              setModifyingProject(true);
-            }}
-          >
-            <p>Modify Project</p>
-          </Button>
-
-          <Button
-            variation="destructive"
-            onClick={() => {
-              setDeleting(true);
-            }}
-          >
-            <p>Delete</p>
-          </Button>
-        </div>
-      </header>
-      <div className="w-full px-5 pt-10 flex flex-col gap-10">
-        <div
-          className="
         flex flex-row w-full 
         p-3
         bg-sidebar-background 
         border-1 border-sidebar-border rounded-xl"
-        >
-          <div
-            className="
+      >
+        <div
+          className="
         w-full
         p-2 gap-5
         flex flex-col
         align-top
         flex-1
         "
-          >
-            <div className="flex flex-row gap-2 ">
-              <div className="w-fit flex flex-row gap-1 items-center p-1 text-text-secondary">
-                <SiGithub className="text-text-primary" size={14} />
-                <p className="text-xs">{data.repoId}</p>
-                <GitBranch size={14} />
-                <p className="text-xs">{data.branchName}</p>
-              </div>
+        >
+          <div className="flex flex-row gap-2 ">
+            <div className="w-fit flex flex-row gap-1 items-center p-1 text-text-secondary">
+              <SiGithub className="text-text-primary" size={14} />
+              <p className="text-xs">{data.repoId}</p>
+              <GitBranch size={14} />
+              <p className="text-xs">{data.branchName}</p>
             </div>
+          </div>
 
-            <div className="flex flex-row items-center gap-2">
-              <a
-                className="
+          <div className="flex flex-row items-center gap-2">
+            <a
+              className="
             text-xs text-accent truncate
             hover:underline"
-                href={
-                  data.cloudFrontDomainName.startsWith("https://")
-                    ? data.cloudFrontDomainName
-                    : "https://" + data.cloudFrontDomainName
-                }
-                target="_blank"
-              >
-                {data.cloudFrontDomainName.replace("https://", "")}
-              </a>
-              <Copy
-                size={14}
-                className="text-accent hover:text-accent-background"
-                onClick={() => {
-                  const urlToCopy = data.cloudFrontDomainName.startsWith(
-                    "https://"
-                  )
-                    ? data.cloudFrontDomainName
-                    : "https://" + data.cloudFrontDomainName;
+              href={
+                data.cloudFrontDomainName.startsWith("https://")
+                  ? data.cloudFrontDomainName
+                  : "https://" + data.cloudFrontDomainName
+              }
+              target="_blank"
+            >
+              {data.cloudFrontDomainName.replace("https://", "")}
+            </a>
+            <Copy
+              size={14}
+              className="text-accent hover:text-accent-background"
+              onClick={() => {
+                const urlToCopy = data.cloudFrontDomainName.startsWith(
+                  "https://"
+                )
+                  ? data.cloudFrontDomainName
+                  : "https://" + data.cloudFrontDomainName;
 
-                  navigator.clipboard.writeText(urlToCopy);
-                  // Need a toast in the future to come
-                }}
-              />
-            </div>
-
-            <EntryWithValue name={"Region"}>
-              <p className="text-text-primary">{data.region}</p>
-            </EntryWithValue>
-
-            <EntryWithValue name={"Created"}>
-              <p className="text-text-primary">
-                {data.createdAt.split(" ")[0] +
-                  " " +
-                  new Date(data.createdAt + "Z").toLocaleTimeString()}
-              </p>
-            </EntryWithValue>
-
-            <EntryWithValue name={"Updated"}>
-              <p className="text-text-primary">
-                {data.updatedAt.split(" ")[0] +
-                  " " +
-                  new Date(data.updatedAt + "Z").toLocaleTimeString()}
-              </p>
-            </EntryWithValue>
-          </div>
-
-          <div className="flex-1 flex flex-col gap-5">
-            <ServiceSpecificDetails
-              data={data}
-              payload={updatePayload}
-              setPayload={setUpdatePayload}
-              modifying={modifyingProject}
-            />
-
-            {modifyingProject && (
-              <div className="flex flex-row justify-center gap-10">
-                <Button
-                  variation="default"
-                  onClick={() => {
-                    setSubmittingUpdates(true);
-                  }}
-                  className="w-fit"
-                >
-                  {" "}
-                  <p>Submit</p>{" "}
-                </Button>
-                <Button
-                  variation="secondary"
-                  onClick={() => {
-                    setModifyingProject(false);
-                  }}
-                  className="w-fit"
-                >
-                  {" "}
-                  <p>Cancel</p>{" "}
-                </Button>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {submittingUpdates && (
-          <div
-            className={`
-        bg-sidebar-background 
-        border-1 border-sidebar-border 
-        p-4 rounded-xl`}
-          >
-            <ServiceUpdateView
-              payload={submittingUpdates ? updatePayload : undefined}
-              id={serviceNumber}
-            />
-          </div>
-        )}
-
-        {deleting && (
-          <div
-            className={`
-        bg-sidebar-background 
-        border-1 border-sidebar-border 
-        p-4 rounded-xl`}
-          >
-            <ServiceDeletionView
-              id={serviceNumber}
-              enabled={deleting}
-              payload={updatePayload}
-              endOfDeletionCallback={() => {
-                // 1 is just a dummy value to trigger mutation
-                deleteServiceMutation.mutate(1);
+                navigator.clipboard.writeText(urlToCopy);
+                // Need a toast in the future to come
               }}
             />
           </div>
-        )}
+
+          <EntryWithValue name={"Region"}>
+            <p className="text-text-primary">{data.region}</p>
+          </EntryWithValue>
+
+          <EntryWithValue name={"Created"}>
+            <p className="text-text-primary">
+              {data.createdAt.split(" ")[0] +
+                " " +
+                new Date(data.createdAt + "Z").toLocaleTimeString()}
+            </p>
+          </EntryWithValue>
+
+          <EntryWithValue name={"Updated"}>
+            <p className="text-text-primary">
+              {data.updatedAt.split(" ")[0] +
+                " " +
+                new Date(data.updatedAt + "Z").toLocaleTimeString()}
+            </p>
+          </EntryWithValue>
+        </div>
+
+        <div className="flex-1 min-w-0 flex flex-col gap-5">
+          <ServiceSpecificDetails
+            data={data}
+            payload={updatePayload}
+            setPayload={setUpdatePayload}
+            modifying={modifyingProject}
+          />
+
+          {modifyingProject && (
+            <div className="flex flex-row justify-center gap-10">
+              <Button
+                variation="default"
+                onClick={() => {
+                  setSubmittingUpdates(true);
+                }}
+                className="w-fit"
+              >
+                {" "}
+                <p>Submit</p>{" "}
+              </Button>
+              <Button
+                variation="secondary"
+                onClick={() => {
+                  setModifyingProject(false);
+                }}
+                className="w-fit"
+              >
+                {" "}
+                <p>Cancel</p>{" "}
+              </Button>
+            </div>
+          )}
+        </div>
       </div>
+
+      <div className="flex flex-row justify-between">
+        <Button
+          variation="default"
+          onClick={() => {
+            setModifyingProject(true);
+          }}
+        >
+          <p>Modify Project</p>
+        </Button>
+
+        <Button
+          variation="destructive"
+          onClick={() => {
+            setDeleting(true);
+          }}
+        >
+          <p>Delete</p>
+        </Button>
+      </div>
+
+      {submittingUpdates && (
+        <div
+          className={`
+        bg-sidebar-background 
+        border-1 border-sidebar-border 
+        p-4 rounded-xl`}
+        >
+          <ServiceUpdateView
+            payload={submittingUpdates ? updatePayload : undefined}
+            id={serviceNumber}
+          />
+        </div>
+      )}
+
+      {deleting && (
+        <div
+          className={`
+        bg-sidebar-background 
+        border-1 border-sidebar-border 
+        p-4 rounded-xl`}
+        >
+          <ServiceDeletionView
+            id={serviceNumber}
+            enabled={deleting}
+            payload={updatePayload}
+            endOfDeletionCallback={() => {
+              // 1 is just a dummy value to trigger mutation
+              deleteServiceMutation.mutate(1);
+            }}
+          />
+        </div>
+      )}
     </div>
   );
 }
@@ -435,4 +389,4 @@ function ServiceSpecificDetails({
   }
 }
 
-export default ServiceInfoPage;
+export default ServiceSettingsPage;

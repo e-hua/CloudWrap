@@ -1,4 +1,4 @@
-import type { DBServiceType } from "@/apis/services.types";
+import type { DBServiceType } from "@/apis/services/services.types";
 import { SiGithub } from "@icons-pack/react-simple-icons";
 import { AppWindow, GitBranch, Server } from "lucide-react";
 import { useNavigate } from "react-router";

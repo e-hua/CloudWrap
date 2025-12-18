@@ -1,4 +1,4 @@
-import { fetchServices } from "@/apis/services";
+import { fetchServices } from "@/apis/services/services";
 import ProjectCard from "@/components/ProjectCard";
 import Button from "@/components/ui/Button";
 import { useQuery } from "@/lib/query-lite";

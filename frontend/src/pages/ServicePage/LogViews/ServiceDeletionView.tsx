@@ -1,6 +1,6 @@
-import { deleteService } from "@/apis/services";
+import { deleteService } from "@/apis/services/services";
 import LogView from "./LogView";
-import type { DeleteServicePayload } from "@/apis/service.schema";
+import type { DeleteServicePayload } from "@/apis/services/service.schema";
 
 type DeletionViewProps = {
   enabled: boolean;

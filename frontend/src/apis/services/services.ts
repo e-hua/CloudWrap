@@ -103,3 +103,5 @@ export {
   updateService,
   deleteService,
 };
+
+export { serviceURL };

@@ -1,7 +1,7 @@
 import "./tailwind.css";
 import { WorkspaceProvider } from "./hooks/UseWorkspace";
 import Layout from "@/layout/Layout";
-import { Route, Routes } from "react-router";
+import { Navigate, Route, Routes } from "react-router";
 import StoragePage from "@/pages/StoragePage";
 import StorageInfoPage from "@/pages/StorageInfoPage";
 import ThemeProvider from "@/hooks/UseTheme";
@@ -17,7 +17,9 @@ import {
   QueryLiteDevtools,
 } from "./lib/query-lite";
 import NewServicePage from "./pages/ServicePage/NewServicePage";
-import ServiceInfoPage from "./pages/ServicePage/ServiceInfoPage";
+import ServiceLayout from "./pages/ServicePage/ServiceLayout";
+import ServiceSettingsPage from "./pages/ServicePage/ServiceSettingsPage";
+import ServiceDeploymentPage from "./pages/ServicePage/ServiceDeploymentPage";
 
 const queryClient = new QueryClient();
 
@@ -31,12 +33,17 @@ function App() {
               <Route path="/dashboard" element={<></>} />
               <Route path="/bills" element={<CostDashboardPage />} />
               <Route path="/credentials" element={<></>} />
+
               <Route path="/services" element={<ServicePage />} />
               <Route path="/services/new" element={<NewServicePage />} />
               <Route
                 path="/services/:serviceNumber"
-                element={<ServiceInfoPage />}
-              />
+                element={<ServiceLayout />}
+              >
+                <Route index element={<Navigate to="settings" replace />} />
+                <Route path="settings" element={<ServiceSettingsPage />} />
+                <Route path="deployment" element={<ServiceDeploymentPage />} />
+              </Route>
 
               <Route path="/instances" element={<InstancePage />} />
               <Route

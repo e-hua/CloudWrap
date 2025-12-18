@@ -1,5 +1,5 @@
-import type { CreateServicePayload } from "@/apis/service.schema";
-import { createService } from "@/apis/services";
+import type { CreateServicePayload } from "@/apis/services/service.schema";
+import { createService } from "@/apis/services/services";
 import LogView from "./LogView";
 
 type DeploymentViewProps = {

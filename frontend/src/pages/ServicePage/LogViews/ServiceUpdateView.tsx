@@ -1,5 +1,5 @@
-import type { UpdateServicePayload } from "@/apis/service.schema";
-import { updateService } from "@/apis/services";
+import type { UpdateServicePayload } from "@/apis/services/service.schema";
+import { updateService } from "@/apis/services/services";
 import LogView from "./LogView";
 
 type UpdateViewProps = {

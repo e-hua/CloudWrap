@@ -2,7 +2,7 @@ import Input from "@/components/ui/Input";
 import { useState } from "react";
 import { SiGithub } from "@icons-pack/react-simple-icons";
 import { GitBranch } from "lucide-react";
-import type { ProjectType } from "@/apis/services.types";
+import type { ProjectType } from "@/apis/services/services.types";
 import ToggleGroup from "@/components/ui/ToggleGroup";
 import { InstanceTypeList } from "../InstancePage";
 import { Select, SelectTrigger, SelectValue } from "@/components/ui/Select";
@@ -11,7 +11,7 @@ import type {
   CreateServicePayload,
   ServerAttributesType,
   StaticSiteAttributesType,
-} from "@/apis/service.schema";
+} from "@/apis/services/service.schema";
 import NewServiceDeploymentView from "./LogViews/NewServiceDeploymentView";
 
 type InputFieldProps = {
