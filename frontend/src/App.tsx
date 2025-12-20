@@ -20,6 +20,7 @@ import NewServicePage from "./pages/ServicePage/NewServicePage";
 import ServiceLayout from "./pages/ServicePage/ServiceLayout";
 import ServiceSettingsPage from "./pages/ServicePage/ServiceSettingsPage";
 import ServiceDeploymentPage from "./pages/ServicePage/ServiceDeploymentPage";
+import ServiceDeploymentRunsPage from "./pages/ServicePage/ServiceDeploymentRunsPage";
 
 const queryClient = new QueryClient();
 
@@ -43,6 +44,10 @@ function App() {
                 <Route index element={<Navigate to="settings" replace />} />
                 <Route path="settings" element={<ServiceSettingsPage />} />
                 <Route path="deployment" element={<ServiceDeploymentPage />} />
+                <Route
+                  path="deployment/:executionId"
+                  element={<ServiceDeploymentRunsPage />}
+                />
               </Route>
 
               <Route path="/instances" element={<InstancePage />} />

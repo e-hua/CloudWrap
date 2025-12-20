@@ -1,19 +1,25 @@
 import {
   fetchDeployments,
+  reDeploy,
   type BackendPipelineExecutionSummary,
 } from "@/apis/services/deployments";
 import { fetchService } from "@/apis/services/services";
 import type { DBServerType, DBSiteType } from "@/apis/services/services.types";
 import { processUpdateTime } from "@/components/ProjectCard";
-import { useQuery } from "@/lib/query-lite";
+import Button from "@/components/ui/Button";
+import Skeleton from "@/components/ui/Skeleton";
+import { useQuery, useQueryClient } from "@/lib/query-lite";
 import type { PipelineExecutionStatus } from "@aws-sdk/client-codepipeline";
 import { SiGithub } from "@icons-pack/react-simple-icons";
 import clsx from "clsx";
-import { GitCommitHorizontal } from "lucide-react";
-import { useParams } from "react-router";
+import { CloudUpload, GitCommitHorizontal, LoaderCircle } from "lucide-react";
+import { useState } from "react";
+import { useNavigate, useParams } from "react-router";
 
 function ServiceDeploymentPage() {
   const { serviceNumber } = useParams();
+
+  const queryClient = useQueryClient();
 
   const { data, status } = useQuery({
     queryKey: `deployment-${serviceNumber}`,
@@ -25,28 +31,55 @@ function ServiceDeploymentPage() {
     queryFunction: () => fetchService(Number(serviceNumber)),
   });
 
+  const [redeploying, setRedeploying] = useState(false);
+
   if (!data && status === "loading") {
-    return <p className="text-blue-400">Loading ...</p>;
+    return (
+      <Skeleton
+        className="
+    bg-sidebar-background w-full h-[60vh]
+    rounded-md border border-sidebar-border overflow-hidden"
+      />
+    );
   } else if (!data) {
     return;
   }
 
   return (
-    <div className="w-full rounded-md border border-sidebar-border overflow-hidden">
-      {data.map((elem, idx) => {
-        return (
-          <ServiceDeploymentEntry
-            key={idx}
-            summary={elem}
-            serviceData={serviceData}
-          />
-        );
-      })}
+    <div className="w-full flex flex-col gap-2">
+      <div className="w-full flex flex-row justify-end">
+        <Button
+          variation="secondary"
+          onClick={async () => {
+            setRedeploying(true);
+            await reDeploy(serviceNumber);
+            queryClient.invalidateQuery(`deployment-${serviceNumber}`);
+            setRedeploying(false);
+          }}
+          disabled={redeploying}
+        >
+          {redeploying ? (
+            <LoaderCircle size={16} className="animate-spin" />
+          ) : (
+            <CloudUpload size={16} />
+          )}
+          <p>ReDeploy</p>
+        </Button>
+      </div>
+      <div className="w-full rounded-md border border-sidebar-border overflow-hidden">
+        {data.map((elem, idx) => {
+          return (
+            <ServiceDeploymentEntry
+              key={idx}
+              summary={elem}
+              serviceData={serviceData}
+            />
+          );
+        })}
+      </div>
     </div>
   );
 }
-
-export default ServiceDeploymentPage;
 
 const statusConfig: Record<PipelineExecutionStatus, { className: string }> = {
   Succeeded: {
@@ -93,36 +126,48 @@ function msToHHMMSS(ms: number): string {
 function ServiceDeploymentEntry({
   summary,
   serviceData,
+  className,
 }: {
-  summary: BackendPipelineExecutionSummary;
+  summary: BackendPipelineExecutionSummary | undefined;
   serviceData: DBServerType | DBSiteType | undefined;
+  className?: string;
 }) {
+  const navigate = useNavigate();
   if (!serviceData) {
+    return;
+  } else if (!summary) {
     return;
   }
 
   return (
     <div
-      className="
-    flex flex-row 
-    justify-between items-center 
-    w-full bg-sidebar-selected p-4
-    border-t border-sidebar-border first:border-t-0
-    "
+      className={clsx(
+        `flex flex-row 
+          justify-between items-center 
+          w-full bg-sidebar-selected p-4
+          border-t border-sidebar-border first:border-t-0`,
+        className
+      )}
     >
-      <h2
+      <a
         className="
         flex-1 truncate min-w-0
         text-text-primary text-sm font-semibold 
         hover:text-accent hover:underline"
+        onClick={() =>
+          navigate(
+            `/services/${serviceData.id}/deployment/${summary.pipelineExecutionId}`
+          )
+        }
       >
         {summary.pipelineExecutionId}
-      </h2>
+      </a>
 
       <div
         className="
       flex-1
-      flex flex-col items-center gap-1"
+      flex flex-col 
+      justify-start items-center gap-1"
       >
         <div className="flex flex-row items-center gap-2">
           <span
@@ -170,11 +215,10 @@ function ServiceDeploymentEntry({
         <div className="flex flex-row items-center gap-2 w-full">
           <GitCommitHorizontal size={14} className="shrink-0" />{" "}
           <p className="truncate flex-1 min-w-0">
-            {
-              JSON.parse(
-                (summary?.sourceRevisions || [])[0]?.revisionSummary || ""
-              ).CommitMessage
-            }
+            {summary?.sourceRevisions?.[0]?.revisionSummary
+              ? JSON.parse(summary.sourceRevisions[0].revisionSummary)
+                  .CommitMessage
+              : "No commit message"}
           </p>
         </div>
       </div>
@@ -195,3 +239,7 @@ function ServiceDeploymentEntry({
     </div>
   );
 }
+
+export default ServiceDeploymentPage;
+export { ServiceDeploymentEntry };
+export { msToHHMMSS };

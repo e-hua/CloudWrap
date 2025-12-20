@@ -112,7 +112,7 @@ function ServiceSettingsPage() {
   }
 
   return (
-    <div className="w-full px-5 pt-10 flex flex-col gap-10">
+    <div className="w-full px-5 flex flex-col gap-10">
       <div
         className="
         flex flex-row w-full 

@@ -68,7 +68,7 @@ function LogView({
   }
 
   return (
-    <div ref={containerRef}>
+    <div ref={containerRef} className="w-full">
       <Xterm ref={XtermRef} appTheme={appTheme} />
     </div>
   );

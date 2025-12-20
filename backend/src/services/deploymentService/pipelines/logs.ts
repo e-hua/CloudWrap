@@ -2,6 +2,7 @@ import { type StrictCredentials } from "@/services/assumeRoleService.js";
 import {
   CodePipelineClient,
   GetPipelineExecutionCommand,
+  GetPipelineStateCommand,
   ListActionExecutionsCommand,
   PipelineExecutionStatus,
   type ActionExecutionDetail,
@@ -89,6 +90,8 @@ async function streamPipelineStatus(
     },
   });
 
+  const stateCommand = new GetPipelineStateCommand({ name: pipelineName });
+
   while (running) {
     try {
       const response = await client.send(executionCommand);
@@ -112,25 +115,54 @@ async function streamPipelineStatus(
         running = false;
       }
 
-      const details = await client.send(actionCommand);
+      const [detailsResponse, stateResponse] = await Promise.all([
+        client.send(actionCommand),
+        client.send(stateCommand),
+      ]);
 
-      const curr_all_execution_details = details?.actionExecutionDetails ?? [];
+      const curr_all_execution_details =
+        detailsResponse?.actionExecutionDetails ?? [];
+      const stageStates = stateResponse?.stageStates ?? [];
 
-      const curr_most_recent_action =
-        curr_all_execution_details[curr_all_execution_details.length - 1];
+      const enriched_execution_details = curr_all_execution_details.map(
+        (detail) => {
+          const matchingStage = stageStates.find(
+            (state) => state.stageName === detail.stageName
+          );
+          const matchingAction = matchingStage?.actionStates?.find(
+            (state) => state.actionName === detail.actionName
+          );
 
-      const curr_action_key = `
-      ${curr_most_recent_action?.stageName}-
-      ${curr_most_recent_action?.actionName}-
-      ${curr_most_recent_action?.status}`;
+          if (matchingAction?.latestExecution?.externalExecutionId) {
+            return {
+              ...detail,
+              // We inject the ID here so the frontend can read it
+              output: {
+                ...detail.output,
+                executionResult: {
+                  ...detail.output?.executionResult,
+                  externalExecutionId:
+                    matchingAction.latestExecution.externalExecutionId,
+                },
+              },
+            };
+          }
+          return detail;
+        }
+      );
 
-      // Sending all the current statuses of the stages to client
-      if (curr_action_key !== most_recent_status_key) {
+      const current_state_signature = enriched_execution_details
+        .map((elem) => `${elem.stageName}:${elem.actionName}:${elem.status}`)
+        .join("|");
+
+      // If the entire state fo the pipeline is different from the previous state
+      // Send all the current statuses of the stages to client
+      if (current_state_signature !== most_recent_status_key) {
         onStream({
           source: "pipeline-status",
-          data: curr_all_execution_details,
+          data: enriched_execution_details,
         });
-        most_recent_status_key = curr_action_key;
+        most_recent_status_key = current_state_signature;
       }
 
       if (running) {

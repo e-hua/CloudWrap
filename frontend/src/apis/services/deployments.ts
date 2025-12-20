@@ -1,6 +1,8 @@
 import { serviceURL } from "./services";
-import { type PipelineExecutionSummary } from "@aws-sdk/client-codepipeline";
-import { type PipelineExecutionStatus } from "@aws-sdk/client-codepipeline";
+import {
+  type PipelineExecutionSummary,
+  type StartPipelineExecutionCommandOutput,
+} from "@aws-sdk/client-codepipeline";
 
 type BackendPipelineExecutionSummary = Omit<
   PipelineExecutionSummary,
@@ -28,5 +30,25 @@ async function fetchDeployments(id: string | undefined) {
   }
 }
 
-export { fetchDeployments };
+async function reDeploy(id: string | undefined) {
+  const urlToPost = `${serviceURL}${id}/deploys`;
+
+  if (!id) {
+    return;
+  }
+
+  try {
+    const response = await fetch(urlToPost, {
+      method: "POST",
+    });
+
+    const result: StartPipelineExecutionCommandOutput = await response.json();
+
+    return result;
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+export { fetchDeployments, reDeploy };
 export type { BackendPipelineExecutionSummary };
