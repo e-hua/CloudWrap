@@ -6,6 +6,7 @@ import clsx from "clsx";
 import { AppWindow, Server } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 import { NavLink, Outlet, useLocation, useParams } from "react-router";
+import { motion } from "motion/react";
 
 function ServiceLayout() {
   const { serviceNumber } = useParams();
@@ -179,19 +180,23 @@ function StyledNavLink({
       onClick={() => setSelectedIdx(idx)}
     >
       {hoveredIdx === idx && (
-        <div
+        <motion.div
           className="
         absolute w-full h-8/10 
         top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2
         rounded-md bg-sidebar-selected"
+          layoutId="nav-hovered-block"
+          transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
         />
       )}
       {selectedIdx === idx && (
-        <div
+        <motion.div
           className="
         absolute w-full h-[2px] 
         left-1/2 -translate-x-1/2 bottom-0
         bg-text-primary"
+          layoutId="nav-selected-underline"
+          transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
         />
       )}
       <div className="relative">{children}</div>
