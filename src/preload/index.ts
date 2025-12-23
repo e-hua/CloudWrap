@@ -1,8 +1,20 @@
-import { contextBridge } from 'electron'
+import { contextBridge, ipcRenderer } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
+import { CustomAPI } from './types'
 
 // Custom APIs for renderer
-const api = {}
+const api: CustomAPI = {
+  s3: {
+    listBuckets: () => ipcRenderer.invoke("s3:list-buckets"),
+    addBucket: (bucketName: string) => ipcRenderer.invoke("s3:add-bucket", bucketName),
+    deleteBucket: (bucketName: string) => ipcRenderer.invoke("s3:delete-bucket", bucketName),
+    listObjects: (bucketName: string) => ipcRenderer.invoke("s3:list-objects", bucketName),
+    uploadObject: (bucketName: string, objectName: string, buffer: ArrayBuffer, mimeType: string) => 
+      ipcRenderer.invoke("s3:upload-object", {bucketName, objectName, buffer, mimeType}),
+    deleteObject: (bucketName: string, objectName: string) => ipcRenderer.invoke("s3:delete-object", {bucketName, objectName}),
+    getObject: (bucketName: string, objectName: string) => ipcRenderer.invoke("s3:get-object", {bucketName, objectName}),
+  }
+}
 
 // Use `contextBridge` APIs to expose Electron APIs to
 // renderer only if context isolation is enabled, otherwise

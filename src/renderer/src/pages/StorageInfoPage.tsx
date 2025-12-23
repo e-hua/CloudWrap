@@ -12,11 +12,11 @@ import {
   type ParsedFolder,
   type ParseResult,
 } from "@/utils/parseFileList";
-import type { S3_API_object } from "@/apis/s3.types";
+import { _Object } from "@aws-sdk/client-s3";
 
 export default function StorageInfoPage() {
   const { storageName } = useParams<string>();
-  const [objects, setObjects] = useState<S3_API_object[] | undefined>();
+  const [objects, setObjects] = useState<_Object[] | undefined>();
 
   useEffect(() => {
     (async () => {
@@ -48,7 +48,7 @@ function FolderView({
   objects = [],
   storageName = "-",
 }: {
-  objects: S3_API_object[] | undefined;
+  objects: _Object[] | undefined;
   storageName: string | undefined;
 }) {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -85,7 +85,7 @@ function FolderView({
   return (
     <div
       className="rounded-md overflow-hidden 
-    border-1 border-sidebar-border p-4
+    border border-sidebar-border p-4
     flex flex-col gap-5"
     >
       <div className="flex flex-row justify-between">
@@ -156,7 +156,7 @@ function ControlPanel({
               if (!file) {
                 return;
               }
-              let link = document.createElement("a");
+              const link = document.createElement("a");
               link.setAttribute("download", name);
               link.href = URL.createObjectURL(file);
               // Only when the link is actually in the DOM
@@ -304,14 +304,14 @@ function FileTableEntry({
     <tr
       className="text-text-secondary 
     border-b border-sidebar-border last:border-0
-    h-12 text-center break-words"
+    h-12 text-center wrap-break-word"
     >
       <td>
         <div className="flex flex-row gap-2 items-center">
           <Checkbox
             onClick={() => {
               if (item.isFolder) {
-                for (let file of item.folderContents) {
+                for (const file of item.folderContents) {
                   toggleEntrySelectedState(prefix + item.name + file.Key);
                 }
               } else {

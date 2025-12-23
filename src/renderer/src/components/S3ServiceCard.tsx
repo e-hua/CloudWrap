@@ -8,14 +8,14 @@ import Card, { CardEntry } from "@/components/ui/Card";
 type S3ServiceCardProps = {
   serviceType: string;
   serviceName: string | undefined;
-  creationDate: string | undefined;
+  creationDate: Date | undefined;
   serviceProvider: string;
 };
 
 export default function S3ServiceCard({
   serviceType,
   serviceName = "-",
-  creationDate = "-",
+  creationDate = new Date(),
   serviceProvider,
 }: S3ServiceCardProps) {
   const navigate = useNavigate();
@@ -56,7 +56,7 @@ export default function S3ServiceCard({
 
       <CardEntry entryName="created at">
         <p className="text-text-primary text-xs">
-          {creationDate.substring(0, 10)}
+          {creationDate.toISOString().substring(0, 10)}
         </p>
       </CardEntry>
 

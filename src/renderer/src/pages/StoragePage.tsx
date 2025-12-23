@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
-import { createBucket, fetchBuckets, type Bucket } from "@/apis/s3";
+import { createBucket, fetchBuckets } from "@/apis/s3";
 import AccentButton from "@/components/ui/AccentButton";
 import Button from "@/components/ui/Button";
 import S3ServiceCard from "@/components/S3ServiceCard";
 import { Plus } from "lucide-react";
 import Input from "@/components/ui/Input";
 import Modal from "@/components/ui/Modal";
+import { Bucket } from "@aws-sdk/client-s3";
 
 export default function StoragePage() {
   const [buckets, setBuckets] = useState<Bucket[]>([]);
@@ -50,7 +51,7 @@ export default function StoragePage() {
       p-8
       text-text-primary
       rounded-lg
-      border-1 border-sidebar-border"
+      border border-sidebar-border"
     >
       <div className="flex flex-col gap-3">
         <h1 className="font-semibold text-xl">Create new bucket</h1>

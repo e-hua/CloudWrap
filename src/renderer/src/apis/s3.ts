@@ -1,21 +1,14 @@
-import { BACKEND_ENDPOINT_URL } from "@/config/constants";
-import type { S3_API_object } from "./s3.types";
-
-const s3URL = `${BACKEND_ENDPOINT_URL}s3/`;
-
-export type Bucket = {
-  Name?: string | undefined;
-  CreationDate?: string | undefined;
-};
+import type { _Object } from "@aws-sdk/client-s3";
 
 async function fetchBuckets() {
   try {
-    const response = await fetch(`${s3URL}buckets/`, {
-      method: "GET",
-    });
-
-    const result: Bucket[] = await response.json();
-    return result;
+    const response = await window.api.s3.listBuckets();
+    if (response.success) {
+      const result = response.data || []
+      return result;
+    } else {
+      throw new Error(response.error)
+    }
   } catch (error) {
     console.error(error);
   }
@@ -23,9 +16,7 @@ async function fetchBuckets() {
 
 async function deleteBucket(bucketName: string) {
   try {
-    const response = await fetch(`${s3URL}buckets/${bucketName}`, {
-      method: "DELETE",
-    });
+    const response = await window.api.s3.deleteBucket(bucketName);
     console.log(response);
   } catch (error) {
     console.error(error);
@@ -34,10 +25,7 @@ async function deleteBucket(bucketName: string) {
 
 async function createBucket(bucketName: string) {
   try {
-    const response = await fetch(`${s3URL}buckets/${bucketName}`, {
-      method: "POST",
-    });
-
+    const response = await window.api.s3.addBucket(bucketName)
     console.log(response);
   } catch (error) {
     console.error(error);
@@ -46,11 +34,13 @@ async function createBucket(bucketName: string) {
 
 async function fetchObjects(bucketName: string) {
   try {
-    const response = await fetch(`${s3URL}buckets/${bucketName}`, {
-      method: "GET",
-    });
-    const result: S3_API_object[] = await response.json();
+    const response = await window.api.s3.listObjects(bucketName);
 
+    if (!response.success) {
+      throw new Error(response.error)
+    }
+
+    const result: _Object[] = response.data || [];
     return result;
   } catch (error) {
     console.error(error);
@@ -65,17 +55,14 @@ async function postObject(
 ) {
   try {
     // appending the file to the body
-    const formData = new FormData();
-    formData.append("file", file);
-    const response = await fetch(
-      `${s3URL}buckets/${bucketName}/${path}${itemName}`,
-      {
-        method: "POST",
-        body: formData,
-      }
-    );
-    const result = await response.json();
-    return result;
+    const buffer = await file.arrayBuffer() 
+
+    const response = await window.api.s3.uploadObject(bucketName, `${path}${itemName}`, buffer, file.type)
+    if (response.success) {
+      console.log(response.message)
+    } else {
+      throw new Error(response.error)
+    }
   } catch (error) {
     console.error(error);
   }
@@ -83,14 +70,12 @@ async function postObject(
 
 async function deleteObject(bucketName: string, itemName: string, path = "") {
   try {
-    const response = await fetch(
-      `${s3URL}buckets/${bucketName}/${path}${itemName}`,
-      {
-        method: "DELETE",
-      }
-    );
-    const result = await response.json();
-    return result;
+    const response = await window.api.s3.deleteObject(bucketName, `${path}${itemName}`);
+    if (response.success) {
+      console.log(response.message)
+    } else {
+      throw new Error(response.error)
+    }
   } catch (error) {
     console.error(error);
   }
@@ -98,14 +83,12 @@ async function deleteObject(bucketName: string, itemName: string, path = "") {
 
 async function getObject(bucketName: string, itemName: string, path = "") {
   try {
-    const response = await fetch(
-      `${s3URL}buckets/${bucketName}/${path}${itemName}`,
-      {
-        method: "GET",
-      }
-    );
-    const result = await response.blob();
-    return result;
+    const response = await window.api.s3.getObject(bucketName, `${path}${itemName}`)
+    if (response.success) {
+      return new Blob([response.data.file],{ type: response.data.type })
+    } else {
+      throw new Error(response.error)
+    }
   } catch (error) {
     console.error(error);
   }

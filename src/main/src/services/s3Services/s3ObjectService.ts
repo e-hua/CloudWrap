@@ -102,10 +102,10 @@ export async function getObject(
   };
 
   const command = new GetObjectCommand(input);
-  const body = (await client.send(command)).Body;
+  const {Body: body, ContentType: type}= await client.send(command);
   if (!body) {
     throw new Error("The object we're trying to get does not exist");
   }
-  const response = await body.transformToByteArray();
-  return response;
+  const byteArray = await body.transformToByteArray();
+  return {byteArray, type};
 }

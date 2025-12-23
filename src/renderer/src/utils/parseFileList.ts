@@ -1,4 +1,5 @@
 import type { S3_API_object } from "@/apis/s3.types";
+import { _Object } from "@aws-sdk/client-s3";
 
 type Folder = S3_API_object & { FolderName: string };
 
@@ -24,7 +25,7 @@ type ParseResult = {
   files: ParsedFile[];
 };
 
-function parseFileList(contents: S3_API_object[]): ParseResult {
+function parseFileList(contents: _Object[]): ParseResult {
   const parsed: ParseResult = {
     folders: [
       // prefix(folder name): string -> things come before `/`
@@ -39,7 +40,7 @@ function parseFileList(contents: S3_API_object[]): ParseResult {
   // A mapping of folder names to folder objects
   const folderMap = new Map<string, ParsedFolder>();
 
-  for (let content of contents) {
+  for (const content of contents) {
     const fileName = content.Key;
 
     if (!fileName) {
@@ -52,7 +53,7 @@ function parseFileList(contents: S3_API_object[]): ParseResult {
       const folderContent: Folder = {
         FolderName: folderName,
         Key: fileName.slice(folderName.length + 1), // excluding "folderName/"
-        LastModified: content.LastModified,
+        LastModified: content.LastModified?.toISOString(),
         Size: content.Size,
         StorageClass: content.StorageClass,
       };
@@ -79,7 +80,7 @@ function parseFileList(contents: S3_API_object[]): ParseResult {
       const file: ParsedFile = {
         name: fileName,
         type: (fileName.includes(".") && fileName.split(".").at(-1)) || "-",
-        lastModified: content.LastModified || "-",
+        lastModified: content.LastModified?.toISOString() || "-",
         storageClass: content.StorageClass || "-",
         size: parseSize(content.Size),
         isFolder: false,
