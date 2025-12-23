@@ -7,10 +7,11 @@ async function fetchBuckets() {
       const result = response.data || []
       return result;
     } else {
-      throw new Error(response.error)
+      throw new Error(`Main thread error: ${response.error}`)
     }
   } catch (error) {
     console.error(error);
+    return undefined
   }
 }
 
@@ -44,6 +45,7 @@ async function fetchObjects(bucketName: string) {
     return result;
   } catch (error) {
     console.error(error);
+    return undefined
   }
 }
 
@@ -91,6 +93,7 @@ async function getObject(bucketName: string, itemName: string, path = "") {
     }
   } catch (error) {
     console.error(error);
+    return undefined
   }
 }
 

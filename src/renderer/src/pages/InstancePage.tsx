@@ -15,7 +15,7 @@ import {
   SelectValue,
 } from "@/components/ui/Select";
 import EC2ServiceCard from "@/components/EC2ServiceCard";
-import type { EC2_API_Instance } from "@/apis/ec2.types";
+import type { EC2_API_Instance } from "@shared/ec2.type";
 
 type PriceKey = "linux_price" | "windows_price";
 
@@ -126,7 +126,7 @@ function InstanceImageGroup({
           <div
             className={clsx(
               `w-full flex flex-col items-center 
-              border-1 p-2
+              border p-2
               min-w-[45%]`,
               newInstanceImage === key
                 ? "border-accent bg-accent-background/30"
@@ -220,7 +220,7 @@ export default function InstancePage() {
       p-8
       text-text-primary
       rounded-lg
-      border-1 border-sidebar-border"
+      border border-sidebar-border"
     >
       <div className="flex flex-col gap-5">
         <div>

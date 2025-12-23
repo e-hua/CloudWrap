@@ -1,4 +1,4 @@
-import type { S3_API_object } from "@/apis/s3.types";
+import type { S3_API_object } from "@shared/s3.types";
 import { _Object } from "@aws-sdk/client-s3";
 
 type Folder = S3_API_object & { FolderName: string };

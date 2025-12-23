@@ -13,6 +13,15 @@ const api: CustomAPI = {
       ipcRenderer.invoke("s3:upload-object", {bucketName, objectName, buffer, mimeType}),
     deleteObject: (bucketName: string, objectName: string) => ipcRenderer.invoke("s3:delete-object", {bucketName, objectName}),
     getObject: (bucketName: string, objectName: string) => ipcRenderer.invoke("s3:get-object", {bucketName, objectName}),
+  },
+  ec2: {
+    listInstances: () => ipcRenderer.invoke('ec2:list-instances'),
+    addInstance: (instanceName, instanceImage, instanceType) => 
+      ipcRenderer.invoke('ec2:add-instance', { instanceName, instanceImage, instanceType }),
+    deleteInstance: (id) => ipcRenderer.invoke('ec2:delete-instance', id),
+    stopInstance: (id) => ipcRenderer.invoke('ec2:stop-instance', id),
+    startInstance: (id) => ipcRenderer.invoke('ec2:start-instance', id),
+    restartInstance: (id) => ipcRenderer.invoke('ec2:restart-instance', id),
   }
 }
 

@@ -1,18 +1,16 @@
-import { BACKEND_ENDPOINT_URL } from "@/config/constants";
-import type { EC2_API_Instance } from "./ec2.types";
+import { EC2_API_Instance } from "@shared/ec2.type";
 
-const ec2URL = `${BACKEND_ENDPOINT_URL}ec2/`;
-
-async function fetchInstances() {
+async function fetchInstances(): Promise<EC2_API_Instance[] | undefined> {
   try {
-    const response = await fetch(`${ec2URL}instances/`, {
-      method: "GET",
-    });
-
-    const result: EC2_API_Instance[] = await response.json();
-    return result;
+    const response = await window.api.ec2.listInstances();
+    if (response.success) {
+      return response.data;
+    } else {
+      throw new Error(response.error)
+    }
   } catch (error) {
     console.error(error);
+    return undefined;
   }
 }
 
@@ -22,80 +20,64 @@ async function launchInstance(
   instanceType: string
 ) {
   try {
-    const response = await fetch(`${ec2URL}instances/`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ instanceName, instanceImage, instanceType }),
-    });
-
-    const result = await response.json();
-    console.log(result);
+    const response = await window.api.ec2.addInstance(instanceName, instanceImage, instanceType);
+    if (response.success) {
+      console.log(response.message)
+    } else {
+      throw new Error(response.error)
+    }
   } catch (error) {
     console.error(error);
   }
 }
 
-async function deleteInstance(instanceId: string, ARN = "") {
+async function deleteInstance(instanceId: string) {
   try {
-    const response = await fetch(`${ec2URL}instances/${instanceId}`, {
-      method: "DELETE",
-      headers: {
-        ARN,
-      },
-    });
-
-    const result = await response.json();
-    console.log(result);
+    const response = await window.api.ec2.deleteInstance(instanceId);
+    if (response.success) {
+      console.log(response.message)
+    } else {
+      throw new Error(response.error)
+    }
   } catch (error) {
     console.error(error);
   }
 }
 
-async function stopInstance(instanceId: string, ARN = "") {
+async function stopInstance(instanceId: string) {
   try {
-    const response = await fetch(`${ec2URL}instances/${instanceId}/stop`, {
-      method: "POST",
-      headers: {
-        ARN,
-      },
-    });
-
-    const result = await response.json();
-    console.log(result);
+    const response = await window.api.ec2.stopInstance(instanceId);
+    if (response.success) {
+      console.log(response.message)
+    } else {
+      throw new Error(response.error)
+    }
   } catch (error) {
     console.error(error);
   }
 }
 
-async function startInstance(instanceId: string, ARN = "") {
+async function startInstance(instanceId: string) {
   try {
-    const response = await fetch(`${ec2URL}instances/${instanceId}/start`, {
-      method: "POST",
-      headers: {
-        ARN,
-      },
-    });
-
-    const result = await response.json();
-    console.log(result);
+    const response = await window.api.ec2.startInstance(instanceId);
+    if (response.success) {
+      console.log(response.message)
+    } else {
+      throw new Error(response.error)
+    }
   } catch (error) {
     console.error(error);
   }
 }
 
-async function restartInstance(instanceId: string, ARN = "") {
+async function restartInstance(instanceId: string) {
   try {
-    const response = await fetch(`${ec2URL}instances/${instanceId}/restart`, {
-      method: "POST",
-      headers: {
-        ARN,
-      },
-    });
-
-    const result = await response.json();
-    console.log(result);
+    const response = await window.api.ec2.restartInstance(instanceId);
+    if (response.success) {
+      console.log(response.message)
+    } else {
+      throw new Error(response.error)
+    }
   } catch (error) {
     console.error(error);
   }

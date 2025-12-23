@@ -98,6 +98,10 @@ type EC2ServiceCardProps = {
   serviceProvider: string | undefined;
 };
 
+const EntryText = ({ children }: { children: ReactNode }) => {
+  return <p className="text-text-primary text-xs">{children}</p>;
+};
+
 export default function EC2ServiceCard({
   Name,
   instanceID,
@@ -187,9 +191,6 @@ export default function EC2ServiceCard({
     </>
   );
 
-  const EntryText = ({ children }: { children: ReactNode }) => {
-    return <p className="text-text-primary text-xs">{children}</p>;
-  };
 
   const stateKey = (instanceState || "unknown") as keyof typeof STATE_MAPPING;
   const entires = (

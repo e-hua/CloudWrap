@@ -7,15 +7,23 @@ export default defineConfig({
   main: {
     resolve: {
       alias: {
-        '@': resolve('src/main/src')
+        '@': resolve('src/main/src'),
+        '@shared': resolve('src/shared')
       }
     },
   },
-  preload: {},
+  preload: {
+    resolve: {
+      alias: {
+        '@shared': resolve('src/shared')
+      }
+    },
+  },
   renderer: {
     resolve: {
       alias: {
         '@': resolve('src/renderer/src'),
+        '@shared': resolve('src/shared')
       }
     },
     plugins: [react(), tailwindcss()]
