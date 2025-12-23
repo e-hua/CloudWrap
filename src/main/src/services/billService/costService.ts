@@ -25,8 +25,8 @@ function createCostExplorerClient(credential: StrictCredentials) {
 
 function getTimePeriod(granularity: Granularity) {
   // "DAILY" || "MONTHLY" || "HOURLY"
-  let currDate = new Date();
-  let startDate = new Date(currDate);
+  const currDate = new Date();
+  const startDate = new Date(currDate);
 
   switch (granularity) {
     case "DAILY":

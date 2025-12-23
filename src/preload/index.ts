@@ -22,6 +22,9 @@ const api: CustomAPI = {
     stopInstance: (id) => ipcRenderer.invoke('ec2:stop-instance', id),
     startInstance: (id) => ipcRenderer.invoke('ec2:start-instance', id),
     restartInstance: (id) => ipcRenderer.invoke('ec2:restart-instance', id),
+  },
+  bill: {
+    getCost: (filter) => ipcRenderer.invoke('bill:get-cost', filter)
   }
 }
 

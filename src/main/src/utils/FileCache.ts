@@ -5,9 +5,9 @@ class FileCache<T> {
   private dirPath: string;
   private ttlInMs: number;
 
-  constructor(dirName: string, ttlInMs: number) {
-    // We resolve where the cache folder will be
-    this.dirPath = path.resolve(`.cache/${dirName}`);
+  constructor(basePath: string, dirName: string, ttlInMs: number) {
+    // E.g. Library/Application\ /Support/Electron/cache/cost
+    this.dirPath = path.join(basePath, 'cache', dirName);
     // We keep track of what's the expected time to live for the file
     this.ttlInMs = ttlInMs;
   }
@@ -44,6 +44,7 @@ class FileCache<T> {
       const file = await fs.readFile(keyPath, "utf-8");
       return JSON.parse(file);
     } catch (err) {
+      console.error(err)
       return null;
     }
   }

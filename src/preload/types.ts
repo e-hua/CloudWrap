@@ -1,3 +1,4 @@
+import { Granularity, ResultByTime } from '@aws-sdk/client-cost-explorer';
 import { _Object, Bucket } from '@aws-sdk/client-s3'
 import { EC2_API_Instance } from '@shared/ec2.type';
 
@@ -36,5 +37,8 @@ export type CustomAPI = {
     stopInstance: (id: string) => Promise<IPCMessageResponse>,
     startInstance: (id: string) => Promise<IPCMessageResponse>,
     restartInstance: (id: string) => Promise<IPCMessageResponse>,
+  },
+  bill: {
+    getCost: (filter: {granularity: Granularity, recordTypes: string}) => Promise<IPCDataResponse<ResultByTime[]>>
   }
 }
