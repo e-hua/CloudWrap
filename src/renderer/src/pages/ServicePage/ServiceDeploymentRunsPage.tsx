@@ -1,9 +1,8 @@
 import { fetchDeployments, reDeploy } from "@/apis/services/deployments";
-import { fetchService, serviceURL } from "@/apis/services/services";
-import { useSSE } from "@/hooks/useSSE";
+import { fetchService } from "@/apis/services/services";
 import { useQuery, useQueryClient } from "@/lib/query-lite";
 import type { ActionExecutionDetail } from "@aws-sdk/client-codepipeline";
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { useParams } from "react-router";
 import { msToHHMMSS, ServiceDeploymentEntry } from "./ServiceDeploymentPage";
 import type { ActionExecutionStatus } from "@aws-sdk/client-codepipeline";
@@ -32,12 +31,12 @@ const actionStatusIcons: Record<ActionExecutionStatus, ReactNode> = {
     </div>
   ),
   Failed: (
-    <div className="bg-red-600 dark:bg-red-500 rounded-full p-[2px]">
+    <div className="bg-red-600 dark:bg-red-500 rounded-full p-0.5">
       <X className="text-background stroke-3" size={12} />
     </div>
   ),
   Succeeded: (
-    <div className="bg-green-700 dark:bg-green-500 rounded-full p-[2px]">
+    <div className="bg-green-700 dark:bg-green-500 rounded-full p-0.5">
       <Check className=" text-background stroke-3" size={12} />
     </div>
   ),
@@ -59,20 +58,30 @@ function ServiceDeploymentRunsPage() {
     queryFunction: () => fetchService(Number(serviceNumber)),
   });
 
-  const { loading: SSELoading } = useSSE({
-    url: `${serviceURL}${serviceNumber}/deploys/${executionId}`,
-    onMessage: (event) => {
-      // data: {"source":"pipeline-status","data":[]}
-      const data = JSON.parse(event.data);
+  const [isLoading, setIsLoading] = useState(true);
 
-      if (data.source === "pipeline-status") {
-        const currActions: ActionExecutionDetail[] = data.data;
-        setActions(currActions);
-      }
-    },
-    onSSEClose: () =>
-      queryClient.invalidateQuery(`deployment-${serviceNumber}`),
-  });
+  useEffect(() => {
+    if (!serviceNumber || !executionId) return;
+    setIsLoading(true); // Start loading
+
+    const removeListener = window.api.deploys.onStatusLog(executionId, (packet) => {
+      // Set the isLoading to false on first packet recieved
+      setIsLoading(false);
+      
+      if (packet.source === "pipeline-status") {
+        setActions(packet.data as ActionExecutionDetail[]);
+      } 
+    });
+
+    window.api.deploys
+      .streamStatuses(serviceNumber, executionId)
+      .catch(err => {
+        console.error("Failed to trigger status stream:", err);
+        setIsLoading(false);
+      });
+
+    return removeListener;
+  }, [executionId, serviceNumber]);
 
   return (
     <div className="w-full flex flex-col gap-2">
@@ -105,7 +114,7 @@ function ServiceDeploymentRunsPage() {
           className="bg-transparent"
         />
         <div className="w-full">
-          {SSELoading ? (
+          {isLoading ? (
             <Skeleton className="w-full h-60" />
           ) : (
             actions

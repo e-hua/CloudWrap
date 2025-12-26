@@ -62,8 +62,8 @@ export type CustomAPI = {
     onDeleteLog: (id: string, callback: (data: StreamData) => void) => () => void;
   };
   deploys: {
-    list: (serviceId: number) => Promise<IPCDataResponse<PipelineExecutionSummary[]>>;
-    trigger: (serviceId: number) => Promise<IPCDataResponse<StartPipelineExecutionCommandOutput>>;
+    list: (serviceId: string) => Promise<IPCDataResponse<PipelineExecutionSummary[]>>;
+    trigger: (serviceId: string) => Promise<IPCDataResponse<StartPipelineExecutionCommandOutput>>;
     
     streamStatuses: (serviceNumber: string, executionId: string) => Promise<void>;
     streamBuild: (buildId: string) => Promise<void>;

@@ -1,3 +1,4 @@
+import Skeleton from "@/components/ui/Skeleton";
 import { LogData, useStream } from "@/hooks/useStream";
 import { useTheme } from "@/hooks/UseTheme";
 import Xterm, { type ChildHandle } from "@/lib/log-stream-lite/Xterm";
@@ -10,6 +11,7 @@ type DeploymentViewProps = {
   // The subscriber (e.g., api.services.onCreateLog)
   listener?: (callback: (data: LogData) => void) => () => void;
   endOfStreamCallback?: () => void;
+  timeDisabled?: boolean;
 };
 
 function LogView({
@@ -17,6 +19,7 @@ function LogView({
   starter,
   listener,
   endOfStreamCallback,
+  timeDisabled
 }: DeploymentViewProps) {
   const appTheme = useTheme();
   const XtermRef = useRef<ChildHandle>(null);
@@ -25,7 +28,7 @@ function LogView({
   const safeStarter = starter ?? (async () => {});
   const safeListener = listener ?? ((() => () => {}));
 
-  const { stream } = useStream(safeStarter, safeListener, endOfStreamCallback);
+  const { stream, isLoading} = useStream(safeStarter, safeListener, endOfStreamCallback);
 
   const deploymentStartedRef = useRef(false);
 
@@ -58,7 +61,7 @@ function LogView({
 
       // \x1b[2m = Dim (faint)
       // \x1b[0m = Reset to normal
-      const timestamp = `\x1b[2m[${time}]\x1b[0m`;
+      const timestamp = timeDisabled ? "" : `\x1b[2m[${time}]\x1b[0m`;
 
       XtermRef.current?.write(`${timestamp} ${text.replace(/\n/g, "\r\n")}`);
     };
@@ -79,8 +82,13 @@ function LogView({
   }
 
   return (
-    <div ref={containerRef} className="w-full">
-      <Xterm ref={XtermRef} appTheme={appTheme} />
+    <div className="w-full grid">
+      <div ref={containerRef} className="w-full col-start-1 row-start-1">
+        <Xterm ref={XtermRef} appTheme={appTheme} />
+      </div>
+      {isLoading && (
+        <Skeleton className="w-full col-start-1 row-start-1 bg-[#ffffff] dark:[lab(27.036%_0_0)] h-110" />
+      )}
     </div>
   );
 }

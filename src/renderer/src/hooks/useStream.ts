@@ -25,10 +25,12 @@ function useStream<T extends LogData>(
   endOfStreamCallback?: () => void
 ) {
   const [isStreaming, setIsStreaming] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const cleanupRef = useRef<(() => void) | null>(null);
 
   const stopStreaming = () => {
     setIsStreaming(false);
+    setIsLoading(false);
     if (cleanupRef.current) cleanupRef.current();
     if (endOfStreamCallback) endOfStreamCallback();
   };
@@ -36,7 +38,7 @@ function useStream<T extends LogData>(
   const stream = async ({ onLog, onSuccess, onError }: StreamOptions) => {
     if (isStreaming) return;
     setIsStreaming(true);
-
+    setIsLoading(true);
     /*
       runTofu.ts 
       type StreamData = {
@@ -59,6 +61,14 @@ function useStream<T extends LogData>(
     */
 
     cleanupRef.current = listener((msg: T) => {
+        // Set the isLoading to false on the first packet received
+        setIsLoading((prevIsLoading) => {
+          if (prevIsLoading) {
+            return false
+          }
+          return prevIsLoading
+        });
+
         const textData = typeof msg.data === 'string' 
           ? msg.data 
           : JSON.stringify(msg.data, null, 2);
@@ -99,7 +109,7 @@ function useStream<T extends LogData>(
     }
   }, [])
 
-  return { stream, isStreaming };
+  return { stream, isStreaming, isLoading};
 }
 
 export { useStream };

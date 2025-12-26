@@ -10,7 +10,9 @@ function createInternalListener<T>(channel: string, callback: (data: T) => void)
   }
   ipcRenderer.on(channel, listener);
   console.log("event listener created")
-  return () => ipcRenderer.removeListener(channel, listener);
+  return () => {
+    ipcRenderer.removeListener(channel, listener);
+  }
 }
 
 // Custom APIs for renderer

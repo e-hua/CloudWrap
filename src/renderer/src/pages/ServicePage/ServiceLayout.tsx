@@ -25,7 +25,7 @@ function ServiceLayout() {
       <header
         className="
         w-full
-        border-b-badge border-b-1 pt-10 px-5
+        border-b-badge border-b pt-10 px-5
         flex flex-col gap-2"
       >
         <div
@@ -192,7 +192,7 @@ function StyledNavLink({
       {selectedIdx === idx && (
         <motion.div
           className="
-        absolute w-full h-[2px] 
+        absolute w-full h-0.5
         left-1/2 -translate-x-1/2 bottom-0
         bg-text-primary"
           layoutId="nav-selected-underline"

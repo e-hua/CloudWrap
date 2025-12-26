@@ -1,7 +1,5 @@
-import { serviceURL } from "./services";
 import {
   type PipelineExecutionSummary,
-  type StartPipelineExecutionCommandOutput,
 } from "@aws-sdk/client-codepipeline";
 
 type BackendPipelineExecutionSummary = Omit<
@@ -11,42 +9,40 @@ type BackendPipelineExecutionSummary = Omit<
   Record<"lastUpdateTime" | "startTime", string>;
 
 async function fetchDeployments(id: string | undefined) {
-  const urlToFetch = `${serviceURL}${id}/deploys`;
-
   if (!id) {
     return;
   }
 
   try {
-    const response = await fetch(urlToFetch, {
-      method: "GET",
-    });
-
-    const result: BackendPipelineExecutionSummary[] = await response.json();
-
-    return result;
-  } catch (err) {
-    console.error(err);
+    const response = await window.api.deploys.list(id)
+    if (response.success) {
+      const result = response.data || []
+      return result;
+    } else {
+      throw new Error(`Main thread error: ${response.error}`)
+    }
+  } catch (error) {
+    console.error(error);
+    return undefined
   }
 }
 
 async function reDeploy(id: string | undefined) {
-  const urlToPost = `${serviceURL}${id}/deploys`;
-
   if (!id) {
     return;
   }
 
   try {
-    const response = await fetch(urlToPost, {
-      method: "POST",
-    });
-
-    const result: StartPipelineExecutionCommandOutput = await response.json();
-
-    return result;
-  } catch (err) {
-    console.error(err);
+    const response = await window.api.deploys.trigger(id)
+    if (response.success) {
+      const result = response.data
+      return result;
+    } else {
+      throw new Error(`Main thread error: ${response.error}`)
+    }
+  } catch (error) {
+    console.error(error);
+    return undefined
   }
 }
 
