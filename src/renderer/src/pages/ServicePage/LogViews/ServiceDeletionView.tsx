@@ -1,4 +1,3 @@
-import { deleteService } from "@/apis/services/services";
 import LogView from "./LogView";
 import type { DeleteServicePayload } from "@/apis/services/service.schema";
 
@@ -18,8 +17,10 @@ function ServiceDeletionView({
   if (enabled && id) {
     return (
       <LogView
-        enabled={true}
-        streamLogsFunc={() => deleteService(payload, id)}
+        key={JSON.stringify(payload)}
+        enabled={true} 
+        starter={() => window.api.services.delete(id, payload)} 
+        listener={(callback) => window.api.services.onDeleteLog(id, callback)} 
         endOfStreamCallback={endOfDeletionCallback}
       />
     );

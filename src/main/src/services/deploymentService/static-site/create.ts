@@ -6,18 +6,16 @@ import {
 } from "@/config/aws.config.js";
 import { getErrorMessage } from "@/utils/errors.js";
 
-import { fileURLToPath } from "url";
 import {type RunTofuCommand, type StreamData} from "../runTofu.js";
 import type {DBSiteInput} from "@/db/queries/Services/Services.types.js";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 // This function create a new temporary directory
 // runs 'tofu init' 'tofu apply' in them
 import type {CreateStaticSiteInput} from "@/services/deploymentService/deployment.schema.js";
 import type {ServiceOperationDeps} from "@/services/deploymentService/deployment.types.js";
 import Database from "better-sqlite3";
+import { app } from "electron";
 
 type CreateStaticSiteDeps = ServiceOperationDeps & {
   serviceCreator: {
@@ -36,11 +34,9 @@ async function createStaticSite(
   {serviceCreator, runTofu, runTofuAndCollect, mkdtemp, copy, rm, tmpdir}: CreateStaticSiteDeps
 ): Promise<void> {
   const templatePath = path.join(
-    __dirname,
-    "..",
-    "..",
-    "..",
-    "..",
+    app.getAppPath(),
+    "src",
+    "main",
     "templates",
     "opentofu",
     "static-site"

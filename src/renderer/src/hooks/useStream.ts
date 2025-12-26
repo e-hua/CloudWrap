@@ -1,5 +1,6 @@
 import { getErrorMessage } from "@/utils/errors";
-import { useState } from "react";
+import { ActionExecutionDetail } from "@aws-sdk/client-codepipeline";
+import { useEffect, useRef, useState } from "react";
 
 type StreamOptions = {
   onLog: (data: string) => void;
@@ -7,133 +8,99 @@ type StreamOptions = {
   onError: (msg: string) => void;
 };
 
-function useStream(
-  streamLogsFunc: () => Promise<Response | undefined>,
+type LogData = {
+  data: string | ActionExecutionDetail[], 
+  source: string, 
+  end?: boolean
+}
+
+// T: StreamData / PipelineLogData / BuildingLogData
+function useStream<T extends LogData>(
+  // Starter: the async function to tell the main process to start streaming
+  starter: () => Promise<void>,
+  // Listener: the function 
+  // taking in a callback waiting for the data sent by the events, 
+  // returning a cleanup function
+  listener: (callback: (data: T) => void) => () => void, 
   endOfStreamCallback?: () => void
 ) {
   const [isStreaming, setIsStreaming] = useState(false);
+  const cleanupRef = useRef<(() => void) | null>(null);
+
+  const stopStreaming = () => {
+    setIsStreaming(false);
+    if (cleanupRef.current) cleanupRef.current();
+    if (endOfStreamCallback) endOfStreamCallback();
+  };
 
   const stream = async ({ onLog, onSuccess, onError }: StreamOptions) => {
-    function processSSEMessage(sseMessage: string) {
-      const lines = sseMessage.split("\n");
+    if (isStreaming) return;
+    setIsStreaming(true);
 
-      let event = "message";
-      let jsonData = "";
+    /*
+      runTofu.ts 
+      type StreamData = {
+        source: "stdout" | "stderr" | "sys-info" | "sys-failure";
+        data: string;
+      };
 
-      for (const line of lines) {
-        const trimmed = line.trim();
+      logs.ts
+      type LogData = {
+        data: string | ActionExecutionDetail[];
+      };
 
-        if (trimmed.startsWith("data: ")) {
-          jsonData = trimmed.substring(6);
-        } else if (trimmed.startsWith("event: ")) {
-          event = trimmed.substring(7);
-        }
-      }
+      type PipelineLogData = LogData & {
+        source: "pipeline-status" | "sys-failure" | "sys-info";
+      };
 
-      if (!jsonData) {
-        return;
-      }
+      type BuildingLogData = LogData & {
+        source: "build-logs" | "sys-failure" | "sys-info";
+      };
+    */
 
-      try {
-        const msg = JSON.parse(jsonData);
-
-        if (event === "end") {
-          onSuccess(msg.message || "Success");
-          return;
-        }
-
-        if (event === "error") {
-          onError(msg.message || "Unknown Error");
-          return;
-        }
-        // Application Logs
-        /*
-            runTofu.ts 
-            type StreamData = {
-              source: "stdout" | "stderr" | "sys-info" | "sys-failure";
-              data: string;
-            };
-
-            logs.ts
-            type LogData = {
-              data: string | ActionExecutionDetail[];
-            };
-
-            type PipelineLogData = LogData & {
-              source: "pipeline-status" | "sys-failure" | "sys-info";
-            };
-
-            type BuildingLogData = LogData & {
-              source: "build-logs" | "sys-failure" | "sys-info";
-            };
-          */
-
-        const parsedData = (msg.data as string).endsWith("\n")
-          ? msg.data
-          : msg.data + "\n";
+    cleanupRef.current = listener((msg: T) => {
+        const textData = typeof msg.data === 'string' 
+          ? msg.data 
+          : JSON.stringify(msg.data, null, 2);
 
         switch (msg.source) {
           case "stderr":
           case "sys-failure":
-            onError(parsedData);
+            onError(textData);
             break;
           case "sys-info":
-            onSuccess(parsedData);
+            onSuccess(textData);
             break;
           default:
-            onLog(parsedData);
+            onLog(textData);
         }
-      } catch (err) {
-        console.error("Unable to parse SSE message", err, sseMessage);
-      }
-    }
-
-    setIsStreaming(true);
-
+        if (msg.end) {
+          stopStreaming();
+        }
+    })
+  
+    // First register the event listener, then call the starter function 
     try {
-      const res = await streamLogsFunc();
-
-      if (!res || !res.body) {
-        throw new Error("No response body received (Network Error)");
-      }
-
-      const reader = res.body.getReader();
-      const decoder = new TextDecoder();
-
-      let buffer = "";
-
-      while (true) {
-        const { done, value } = await reader.read();
-
-        const curr_chunk = decoder.decode(value, { stream: true });
-        buffer += curr_chunk;
-
-        if (done) {
-          // If there're something left in the buffer
-          if (buffer.trim()) {
-            processSSEMessage(buffer);
-          }
-          break;
-        }
-
-        // Here we need to parse the logs sent by SSE manually
-        const sseMessages = buffer.split("\n\n");
-        buffer = sseMessages.pop() || "";
-
-        for (const sseMessage of sseMessages) {
-          processSSEMessage(sseMessage);
-        }
-      }
+      await starter();
     } catch (err) {
-      console.error(err);
       onError(getErrorMessage(err));
-    } finally {
-      setIsStreaming(false);
-      (endOfStreamCallback ?? (() => {}))();
+      console.error(err)
+      stopStreaming()
     }
   };
+
+  useEffect(() => {
+    return () => {
+      if (cleanupRef.current) {
+        console.log("Event listener removed: useEffect")
+        // remove the event listener when unmounts, preventing memory leak
+        stopStreaming()
+      }
+    }
+  }, [])
 
   return { stream, isStreaming };
 }
 
 export { useStream };
+export type {LogData}

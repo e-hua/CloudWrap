@@ -1,6 +1,17 @@
-import { contextBridge, ipcRenderer } from 'electron'
+import { contextBridge, ipcRenderer, IpcRendererEvent } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
 import { CustomAPI } from './types'
+import { BuildingLogData, PipelineLogData } from '@/services/deploymentService/pipelines/logs'
+import { StreamData } from '@/services/deploymentService/runTofu'
+
+function createInternalListener<T>(channel: string, callback: (data: T) => void) {
+  const listener = (_event: IpcRendererEvent, param: T) => { 
+    callback(param)
+  }
+  ipcRenderer.on(channel, listener);
+  console.log("event listener created")
+  return () => ipcRenderer.removeListener(channel, listener);
+}
 
 // Custom APIs for renderer
 const api: CustomAPI = {
@@ -25,6 +36,35 @@ const api: CustomAPI = {
   },
   bill: {
     getCost: (filter) => ipcRenderer.invoke('bill:get-cost', filter)
+  },
+  services: {
+    list: (filter) => ipcRenderer.invoke('services:list', filter),
+    get: (id) => ipcRenderer.invoke('services:get', id),
+    
+    create: (payload) => ipcRenderer.invoke('services:stream-create', payload),
+    update: (id, payload) => ipcRenderer.invoke('services:stream-update', { id, payload }),
+    delete: (id, payload) => ipcRenderer.invoke('services:stream-delete', { id, payload }),
+
+    onCreateLog: (callback) => createInternalListener<StreamData>('services-internal:create-log', callback),
+    onUpdateLog: (id, callback) => createInternalListener<StreamData>(`services-internal:${id}-update-log`, callback),
+    onDeleteLog: (id, callback) => createInternalListener<StreamData>(`services-internal:${id}-delete-log`, callback),
+  },
+
+  deploys: {
+    list: (serviceId) => ipcRenderer.invoke('deploys:list', serviceId),
+    trigger: (serviceId) => ipcRenderer.invoke('deploys:trigger', serviceId),
+
+    streamStatuses: (serviceNumber, executionId) => 
+      ipcRenderer.invoke('deploys:stream-statuses', { serviceNumber, executionId }),
+    
+    streamBuild: (buildId) => 
+      ipcRenderer.invoke('deploys:stream-build', { buildId }),
+
+    onStatusLog: (executionId, callback) => 
+      createInternalListener<PipelineLogData>(`deploys-internal:execution-${executionId}`, callback),
+      
+    onBuildLog: (buildId, callback) => 
+      createInternalListener<BuildingLogData>(`deploys-internal:build-${buildId}`, callback),
   }
 }
 

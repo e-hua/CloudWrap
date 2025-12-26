@@ -1,5 +1,4 @@
 import type { UpdateServicePayload } from "@/apis/services/service.schema";
-import { updateService } from "@/apis/services/services";
 import LogView from "./LogView";
 
 type UpdateViewProps = {
@@ -11,8 +10,10 @@ function ServiceUpdateView({ payload, id }: UpdateViewProps) {
   if (payload) {
     return (
       <LogView
-        enabled={true}
-        streamLogsFunc={() => updateService(payload, id)}
+        key={JSON.stringify(payload)}
+        enabled={true} 
+        starter={() => window.api.services.update(id, payload)} 
+        listener={(callback) => window.api.services.onUpdateLog(id, callback)} 
       />
     );
   } else {

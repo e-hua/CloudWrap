@@ -47,7 +47,7 @@ function BottomBorderInput({
       <div className="flex flex-col text-sm w-fit">
         <p className="text-text-secondary">{name}</p>
         <input
-          className="border-0 border-b-1 border-b-text-secondary focus:border-b-accent outline-0 text-text-primary"
+          className="border-0 border-b border-b-text-secondary focus:border-b-accent outline-0 text-text-primary"
           value={value || ""}
           onChange={(event) => onValueChange(event.target.value)}
         />
@@ -118,7 +118,7 @@ function ServiceSettingsPage() {
         flex flex-row w-full 
         p-3
         bg-sidebar-background 
-        border-1 border-sidebar-border rounded-xl"
+        border border-sidebar-border rounded-xl"
       >
         <div
           className="
@@ -248,7 +248,7 @@ function ServiceSettingsPage() {
         <div
           className={`
         bg-sidebar-background 
-        border-1 border-sidebar-border 
+        border border-sidebar-border 
         p-4 rounded-xl`}
         >
           <ServiceUpdateView
@@ -262,7 +262,7 @@ function ServiceSettingsPage() {
         <div
           className={`
         bg-sidebar-background 
-        border-1 border-sidebar-border 
+        border border-sidebar-border 
         p-4 rounded-xl`}
         >
           <ServiceDeletionView

@@ -6,18 +6,16 @@ import {
 } from "@/config/aws.config.js";
 import { getErrorMessage } from "@/utils/errors.js";
 
-import { fileURLToPath } from "url";
 import {type RunTofuCommand, type StreamData} from "../runTofu.js";
 import type {DBServerInput, DBServerType, DBSiteType} from "@/db/queries/Services/Services.types.js";
 import {type StrictCredentials} from "@/services/assumeRoleService.js";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 import type {UpdateServerInput, UpdateStaticSiteInput} from "@/services/deploymentService/deployment.schema.js";
 import type {ServiceOperationDeps} from "@/services/deploymentService/deployment.types.js";
 import Database from "better-sqlite3";
 import type {StartPipelineExecutionCommandOutput} from "@aws-sdk/client-codepipeline/dist-types/commands/index.js";
+import { app } from "electron";
 
 type UpdateServerDeps = ServiceOperationDeps & {
   serviceReader: {
@@ -43,11 +41,9 @@ async function updateServer(
   {serviceUpdater, serviceReader, runTofu, runTofuAndCollect, mkdtemp, copy, rm, tmpdir, manualDeploy, assumeRole}: UpdateServerDeps
 ): Promise<void> {
   const templatePath = path.join(
-    __dirname,
-    "..",
-    "..",
-    "..",
-    "..",
+    app.getAppPath(),
+    "src",
+    "main",
     "templates",
     "opentofu",
     "server",

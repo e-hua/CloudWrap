@@ -6,15 +6,12 @@ import {
   STRICT_TF_ROLE_ARN as tf_role_arn,
 } from "@/config/aws.config.js";
 import { getErrorMessage } from "@/utils/errors.js";
-import { fileURLToPath } from "url";
 import type {DBServerInput, DBSiteInput} from "@/db/queries/Services/Services.types.js";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 import type {CreateServerInput, CreateStaticSiteInput} from "@/services/deploymentService/deployment.schema.js";
 import type {ServiceOperationDeps} from "@/services/deploymentService/deployment.types.js";
 import Database from "better-sqlite3";
+import { app } from "electron";
 
 type CreateServerDeps = ServiceOperationDeps & {
   serviceCreator: {
@@ -34,17 +31,14 @@ async function createServer(
   {serviceCreator, runTofu, runTofuAndCollect, mkdtemp, copy, rm, tmpdir, randomBytes}: CreateServerDeps
 ): Promise<void> {
   const templatePath = path.join(
-    __dirname,
-    "..",
-    "..",
-    "..",
-    "..",
-    "templates",
-    "opentofu",
-    "server",
-    "ECS-on-EC2"
-  );
-
+      app.getAppPath(),
+      "src",
+      "main",
+      "templates",
+      "opentofu",
+      "server",
+      "ECS-on-EC2"
+    );
   // Using temporary folder to carry out the deployment
   // E.g. final directory path: '/tmp/cloudwrap-deployment-aB1xZ2'
   const tempDir = await mkdtemp(path.join(tmpdir(), "cloudwrap-deployment-"));

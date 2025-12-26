@@ -1,4 +1,4 @@
-import type { FilterType } from "./bills.types";
+import type { FilterType } from "@shared/bills.types";
 
 async function fetchCost(filterOptions: FilterType) {
   try {

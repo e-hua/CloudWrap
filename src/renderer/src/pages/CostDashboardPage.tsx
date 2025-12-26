@@ -8,7 +8,7 @@ import {
   type GranularityType,
   type Group,
   type ResultByTime,
-} from "@/apis/bills.types";
+} from "@shared/bills.types";
 
 const linesColors = [
   {

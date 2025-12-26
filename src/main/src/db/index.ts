@@ -5,8 +5,10 @@ import {initServiceCreator} from "@/db/queries/Services/createService.js";
 import {initServiceReader} from "@/db/queries/Services/readServices.js";
 import {initServiceDeleter} from "@/db/queries/Services/deleteService.js";
 import {initServiceUpdater} from "@/db/queries/Services/updateService.js";
+import path from "path";
+import { app } from "electron";
 
-const dbPath = "cloudwrap.db";
+const dbPath = path.join(app.getPath('userData'), 'cloudwrap.db');
 const db : DataBaseType = new Database(dbPath, { verbose: console.log });
 
 // Though not required, it is generally important to set the WAL pragma for performance reasons

@@ -1,5 +1,4 @@
 import type { CreateServicePayload } from "@/apis/services/service.schema";
-import { createService } from "@/apis/services/services";
 import LogView from "./LogView";
 
 type DeploymentViewProps = {
@@ -9,7 +8,12 @@ type DeploymentViewProps = {
 function NewServiceDeploymentView({ payload }: DeploymentViewProps) {
   if (payload) {
     return (
-      <LogView enabled={true} streamLogsFunc={() => createService(payload)} />
+      <LogView 
+        key={JSON.stringify(payload)}
+        enabled={true} 
+        starter={() => window.api.services.create(payload)} 
+        listener={window.api.services.onCreateLog} 
+      />
     );
   } else {
     return <LogView enabled={false} />;

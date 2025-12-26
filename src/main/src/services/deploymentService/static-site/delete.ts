@@ -6,14 +6,12 @@ import {
 } from "@/config/aws.config.js";
 import { getErrorMessage } from "@/utils/errors.js";
 
-import { fileURLToPath } from "url";
 import {type StreamData} from "../runTofu.js";
 import type {DBServerType, DBSiteType} from "@/db/queries/Services/Services.types.js";
 import Database from "better-sqlite3";
 import type {ServiceOperationDeps} from "@/services/deploymentService/deployment.types.js";
+import { app } from "electron";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 type DeleteStaticSiteDeps = ServiceOperationDeps & {
   serviceReader: {
@@ -35,11 +33,9 @@ async function deleteStaticSite(
   {serviceReader, serviceDeleter, runTofu, mkdtemp, copy, rm, tmpdir}: DeleteStaticSiteDeps
 ): Promise<void> {
   const templatePath = path.join(
-    __dirname,
-    "..",
-    "..",
-    "..",
-    "..",
+    app.getAppPath(),
+    "src",
+    "main",
     "templates",
     "opentofu",
     "static-site"

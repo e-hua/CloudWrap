@@ -1,29 +1,32 @@
-import { useStream } from "@/hooks/useStream";
+import { LogData, useStream } from "@/hooks/useStream";
 import { useTheme } from "@/hooks/UseTheme";
 import Xterm, { type ChildHandle } from "@/lib/log-stream-lite/Xterm";
 import { useEffect, useRef } from "react";
 
+
 type DeploymentViewProps = {
   enabled: boolean;
-  streamLogsFunc?: () => Promise<Response | undefined>;
+  starter?: () => Promise<void>;
+  // The subscriber (e.g., api.services.onCreateLog)
+  listener?: (callback: (data: LogData) => void) => () => void;
   endOfStreamCallback?: () => void;
 };
 
 function LogView({
   enabled,
-  streamLogsFunc,
+  starter,
+  listener,
   endOfStreamCallback,
 }: DeploymentViewProps) {
   const appTheme = useTheme();
   const XtermRef = useRef<ChildHandle>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const { stream } = useStream(
-    streamLogsFunc ??
-      (async () => {
-        return undefined;
-      }),
-    endOfStreamCallback
-  );
+  
+  const safeStarter = starter ?? (async () => {});
+  const safeListener = listener ?? ((() => () => {}));
+
+  const { stream } = useStream(safeStarter, safeListener, endOfStreamCallback);
+
   const deploymentStartedRef = useRef(false);
 
   useEffect(() => {
@@ -47,6 +50,10 @@ function LogView({
     deploymentStartedRef.current = true;
 
     const onText = (text: string) => {
+      if (!text.endsWith('\n')) {
+        text = text + "\n";
+      }
+
       const time = new Date().toLocaleTimeString("en-GB");
 
       // \x1b[2m = Dim (faint)
@@ -59,8 +66,12 @@ function LogView({
     stream({
       onLog: onText,
       onSuccess: onText,
-      onError: onText,
+      onError:  onText
     });
+
+    return () => {
+      deploymentStartedRef.current = false;
+    };
   }, [enabled]);
 
   if (!enabled) {
