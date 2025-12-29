@@ -1,3 +1,4 @@
+import getTofuBinaryPath from "@/utils/paths";
 import { spawn } from "child_process";
 
 type StreamData = {
@@ -14,8 +15,10 @@ type RunTofuCommand = {
 // This is built on the event emitter system which requires callback functions
 // Which means we got to use Promise and reject for error handling
 function runTofu({ args, dirPath, onStream }: RunTofuCommand): Promise<void> {
+  const tofuPath = getTofuBinaryPath();
+
   return new Promise<void>((resolve, reject) => {
-    const tofu_process = spawn("tofu", args, {
+    const tofu_process = spawn(tofuPath, args, {
       cwd: dirPath,
       env: {
         ...process.env,
@@ -45,8 +48,10 @@ function runTofu({ args, dirPath, onStream }: RunTofuCommand): Promise<void> {
 }
 
 function runTofuAndCollect({args, dirPath}: Omit<RunTofuCommand, 'onStream'>): Promise<string> {
+  const tofuPath = getTofuBinaryPath();
+
   return new Promise<string>((resolve, reject) => {
-    const tofu_process = spawn("tofu", args, {
+    const tofu_process = spawn(tofuPath, args, {
       cwd: dirPath,
       env: {
         ...process.env,

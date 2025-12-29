@@ -6,12 +6,12 @@ import {
   STRICT_TF_ROLE_ARN as tf_role_arn,
 } from "@/config/aws.config.js";
 import { getErrorMessage } from "@/utils/errors.js";
-import type {DBServerInput, DBSiteInput} from "@/db/queries/Services/Services.types.js";
+import type {DBServerInput} from "@/db/queries/Services/Services.types.js";
 
-import type {CreateServerInput, CreateStaticSiteInput} from "@/services/deploymentService/deployment.schema.js";
+import type {CreateServerInput } from "@/services/deploymentService/deployment.schema.js";
 import type {ServiceOperationDeps} from "@/services/deploymentService/deployment.types.js";
 import Database from "better-sqlite3";
-import { app } from "electron";
+import { templateDirPath } from "../pathConfig.js";
 
 type CreateServerDeps = ServiceOperationDeps & {
   serviceCreator: {
@@ -31,10 +31,7 @@ async function createServer(
   {serviceCreator, runTofu, runTofuAndCollect, mkdtemp, copy, rm, tmpdir, randomBytes}: CreateServerDeps
 ): Promise<void> {
   const templatePath = path.join(
-      app.getAppPath(),
-      "src",
-      "main",
-      "templates",
+      templateDirPath,
       "opentofu",
       "server",
       "ECS-on-EC2"

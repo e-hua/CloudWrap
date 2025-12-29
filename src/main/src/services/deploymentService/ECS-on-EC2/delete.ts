@@ -7,10 +7,10 @@ import {
 import { getErrorMessage } from "@/utils/errors.js";
 
 import {type StreamData} from "../runTofu.js";
-import type {DBServerType, DBSiteInput, DBSiteType} from "@/db/queries/Services/Services.types.js";
+import type {DBServerType, DBSiteType} from "@/db/queries/Services/Services.types.js";
 import type {ServiceOperationDeps} from "@/services/deploymentService/deployment.types.js";
 import Database from "better-sqlite3";
-import { app } from "electron";
+import { templateDirPath } from "../pathConfig.js";
 
 
 type DeleteServerDeps = ServiceOperationDeps & {
@@ -33,10 +33,7 @@ async function deleteServer(
   {serviceReader, serviceDeleter, runTofu, mkdtemp, copy, rm, tmpdir}: DeleteServerDeps
 ): Promise<void> {
   const templatePath = path.join(
-    app.getAppPath(),
-    "src",
-    "main",
-    "templates",
+    templateDirPath,
     "opentofu",
     "server",
     "ECS-on-EC2"

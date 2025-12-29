@@ -1,7 +1,6 @@
 import path from "path";
 import {
   STRICT_TF_STATE_BUCKET as state_bucket_name,
-  STRICT_AWS_REGION as region,
   STRICT_TF_ROLE_ARN as tf_role_arn,
 } from "@/config/aws.config.js";
 import { getErrorMessage } from "@/utils/errors.js";
@@ -15,7 +14,7 @@ import type {UpdateStaticSiteInput} from "@/services/deploymentService/deploymen
 import type {ServiceOperationDeps} from "@/services/deploymentService/deployment.types.js";
 import Database from "better-sqlite3";
 import type {StartPipelineExecutionCommandOutput} from "@aws-sdk/client-codepipeline/dist-types/commands/index.js";
-import { app } from "electron";
+import { templateDirPath } from "../pathConfig.js";
 
 type UpdateStaticSiteDeps = ServiceOperationDeps & {
   serviceReader: {
@@ -40,10 +39,7 @@ async function updateStaticSite(
   {serviceUpdater, serviceReader, runTofu, runTofuAndCollect, mkdtemp, copy, rm, tmpdir, manualDeploy, assumeRole}: UpdateStaticSiteDeps
 ): Promise<void> {
   const templatePath = path.join(
-    app.getAppPath(),
-    "src",
-    "main",
-    "templates",
+    templateDirPath,
     "opentofu",
     "static-site"
   );

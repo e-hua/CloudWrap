@@ -15,7 +15,7 @@ import type {DBSiteInput} from "@/db/queries/Services/Services.types.js";
 import type {CreateStaticSiteInput} from "@/services/deploymentService/deployment.schema.js";
 import type {ServiceOperationDeps} from "@/services/deploymentService/deployment.types.js";
 import Database from "better-sqlite3";
-import { app } from "electron";
+import { templateDirPath } from "../pathConfig.js";
 
 type CreateStaticSiteDeps = ServiceOperationDeps & {
   serviceCreator: {
@@ -34,10 +34,7 @@ async function createStaticSite(
   {serviceCreator, runTofu, runTofuAndCollect, mkdtemp, copy, rm, tmpdir}: CreateStaticSiteDeps
 ): Promise<void> {
   const templatePath = path.join(
-    app.getAppPath(),
-    "src",
-    "main",
-    "templates",
+    templateDirPath,
     "opentofu",
     "static-site"
   );

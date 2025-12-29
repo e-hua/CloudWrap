@@ -11,11 +11,11 @@ import type {DBServerInput, DBServerType, DBSiteType} from "@/db/queries/Service
 import {type StrictCredentials} from "@/services/assumeRoleService.js";
 
 
-import type {UpdateServerInput, UpdateStaticSiteInput} from "@/services/deploymentService/deployment.schema.js";
+import type {UpdateServerInput} from "@/services/deploymentService/deployment.schema.js";
 import type {ServiceOperationDeps} from "@/services/deploymentService/deployment.types.js";
 import Database from "better-sqlite3";
 import type {StartPipelineExecutionCommandOutput} from "@aws-sdk/client-codepipeline/dist-types/commands/index.js";
-import { app } from "electron";
+import { templateDirPath } from "../pathConfig.js";
 
 type UpdateServerDeps = ServiceOperationDeps & {
   serviceReader: {
@@ -41,10 +41,7 @@ async function updateServer(
   {serviceUpdater, serviceReader, runTofu, runTofuAndCollect, mkdtemp, copy, rm, tmpdir, manualDeploy, assumeRole}: UpdateServerDeps
 ): Promise<void> {
   const templatePath = path.join(
-    app.getAppPath(),
-    "src",
-    "main",
-    "templates",
+    templateDirPath,
     "opentofu",
     "server",
     "ECS-on-EC2"

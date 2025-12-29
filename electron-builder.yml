@@ -9,8 +9,16 @@ files:
   - '!{.eslintcache,eslint.config.mjs,.prettierignore,.prettierrc.yaml,dev-app-update.yml,CHANGELOG.md,README.md}'
   - '!{.env,.env.*,.npmrc,pnpm-lock.yaml}'
   - '!{tsconfig.json,tsconfig.node.json,tsconfig.web.json}'
+extraResources:
+  - from: src/main/templates
+    to: templates
+  - from: src/main/resources/bin
+    to: bin
+    filter:
+      - "**/*"
 asarUnpack:
-  - resources/**
+  - "**/resources/bin/**" 
+  - "**/templates/**"
 win:
   executableName: electron-vite
 nsis:

@@ -6,3 +6,4 @@ out
 .eslintcache
 *.log*
 .env
+src/main/resources/bin/
