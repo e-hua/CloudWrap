@@ -67,6 +67,11 @@ const api: CustomAPI = {
       
     onBuildLog: (buildId, callback) => 
       createInternalListener<BuildingLogData>(`deploys-internal:build-${buildId}`, callback),
+  },
+
+  onboarding: {
+    start: (credentials) => ipcRenderer.invoke('onboarding:start', credentials),
+    onLog: (callback) => createInternalListener<StreamData>('onboarding-internal:start', callback)
   }
 }
 

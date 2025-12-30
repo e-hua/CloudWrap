@@ -73,4 +73,9 @@ export type CustomAPI = {
     onStatusLog: (executionId: string, callback: (data: PipelineLogData) => void) => () => void;
     onBuildLog: (buildId: string, callback: (data: BuildingLogData) => void) => () => void;
   };
+
+  onboarding: {
+    start: (credentials: { accessKey: string; secretKey: string; region: string }) => Promise<IPCSuccessResponse<void>>;
+    onLog: (callback: (data: StreamData) => void) => () => void;
+  }
 }

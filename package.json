@@ -22,6 +22,7 @@
     "build:linux": "electron-vite build && electron-builder --linux"
   },
   "dependencies": {
+    "@aws-sdk/client-cloudformation": "^3.958.0",
     "@aws-sdk/client-cloudwatch-logs": "^3.922.0",
     "@aws-sdk/client-codebuild": "^3.922.0",
     "@aws-sdk/client-codepipeline": "^3.922.0",
