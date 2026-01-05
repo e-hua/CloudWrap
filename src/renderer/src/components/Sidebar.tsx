@@ -22,7 +22,7 @@ export default function Sidebar() {
     <div
       className="fixed top-0 left-0 
     h-full w-60 
-    flex flex-col align-middle space-y-4 px-2 border-r-[1px] 
+    flex flex-col align-middle space-y-4 px-2 border-r
     bg-sidebar-background text-text-primary
     border-sidebar-border"
     >
@@ -31,7 +31,7 @@ export default function Sidebar() {
         <div>
           <SidebarIcon icon={<Dashboard />} name="Dashboard" />
           <SidebarIcon icon={<Bills />} name="Bills" beta />
-          <SidebarIcon icon={<Credentials />} name="Credentials" />
+          <SidebarIcon icon={<Credentials />} name="Credentials" beta />
         </div>
       </div>
 

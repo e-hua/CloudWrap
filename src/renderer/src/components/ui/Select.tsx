@@ -5,7 +5,7 @@ import {
   useState,
   useContext,
   type Dispatch,
-  type ReactNode,
+  type ReactNode
 } from "react";
 import clsx from "clsx";
 import { ChevronDown, Check } from "lucide-react";
@@ -23,16 +23,12 @@ type SelectValueContextType = {
 type SelectContextType = SelectUIContextType & SelectValueContextType;
 
 // A react context for the management of all the states const SelectStatesContext = createContext();
-const SelectStatesContext = createContext<SelectContextType | undefined>(
-  undefined
-);
+const SelectStatesContext = createContext<SelectContextType | undefined>(undefined);
 
 const useSelectStatesContext = () => {
   const context = useContext(SelectStatesContext);
   if (!context) {
-    throw new Error(
-      "useSelectStatesContext must be used within a Select component"
-    );
+    throw new Error("useSelectStatesContext must be used within a Select component");
   }
   return context;
 };
@@ -40,7 +36,7 @@ const useSelectStatesContext = () => {
 function Select({
   selectedValue,
   onValueChange,
-  children,
+  children
 }: {
   children: React.ReactNode;
 } & SelectValueContextType) {
@@ -76,13 +72,7 @@ function Select({
   );
 }
 
-function SelectTrigger({
-  className,
-  children,
-}: {
-  className?: string;
-  children: ReactNode;
-}) {
+function SelectTrigger({ className, children }: { className?: string; children: ReactNode }) {
   const stateContext = useSelectStatesContext();
 
   const { selectOpen, setSelectOpen } = stateContext;
@@ -93,7 +83,7 @@ function SelectTrigger({
         `flex flex-row items-center
         bg-sidebar-selected hover:bg-sidebar-hovered
         p-1.5 rounded-md
-        border-1 border-sidebar-border focus:outline-none`,
+        border border-sidebar-border focus:outline-none`,
         className
       )}
       onClick={() => setSelectOpen(!selectOpen)}
@@ -103,44 +93,34 @@ function SelectTrigger({
   );
 }
 
-function SelectValue({
-  className,
-  placeholder,
-}: {
-  className?: string;
-  placeholder: string;
-}) {
+function SelectValue({ className, placeholder }: { className?: string; placeholder: string }) {
   const stateContext = useSelectStatesContext();
 
-  const { selectedValue } = stateContext;
+  const { selectedValue, selectOpen } = stateContext;
 
   return (
     <div
-      className={clsx(
-        `flex flex-row items-center justify-between w-full px-1 text-sm`,
-        className
-      )}
+      className={clsx(`flex flex-row items-center justify-between w-full px-1 text-sm`, className)}
     >
       <span
-        className={clsx(
-          selectedValue ? "text-text-primary" : "text-text-secondary",
-          "font-light"
-        )}
+        className={clsx(selectedValue ? "text-text-primary" : "text-text-secondary", "font-light")}
       >
         {selectedValue || placeholder}
       </span>
-      <ChevronDown className="text-text-secondary" size={14} />
+      <div
+        className={clsx(
+          "text-text-secondary",
+          selectOpen ? "rotate-180" : "",
+          "transition-transform"
+        )}
+      >
+        <ChevronDown size={14} />
+      </div>
     </div>
   );
 }
 
-function SelectContent({
-  className,
-  children,
-}: {
-  className?: string;
-  children: ReactNode;
-}) {
+function SelectContent({ className, children }: { className?: string; children: ReactNode }) {
   const stateContext = useSelectStatesContext();
   const { selectOpen } = stateContext;
 
@@ -151,7 +131,7 @@ function SelectContent({
       className={clsx(
         `
         absolute bg-sidebar-background w-full mt-1
-        border-1 border-sidebar-border 
+        border border-sidebar-border 
         p-1.5 rounded-md
         max-h-30 overflow-scroll`,
         className
@@ -165,7 +145,7 @@ function SelectContent({
 function SelectItem({
   className,
   children,
-  value,
+  value
 }: {
   className?: string;
   children: ReactNode;
@@ -176,10 +156,7 @@ function SelectItem({
 
   return (
     <div
-      className={clsx(
-        "relative hover:bg-sidebar-hovered rounded-md p-1",
-        className
-      )}
+      className={clsx("relative hover:bg-sidebar-hovered rounded-md p-1", className)}
       onClick={() => {
         onValueChange(value);
         setSelectOpen(false);

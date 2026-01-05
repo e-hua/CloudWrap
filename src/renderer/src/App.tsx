@@ -11,16 +11,15 @@ import { TestDashboard } from "@/lib/query-lite/tests/TestDashboard";
 import TestLogViewPage from "./pages/TestLogViewPage";
 import LogViewPage from "./pages/LogViewPage";
 import ServicePage from "./pages/ServicePage/ServicePage";
-import {
-  QueryClient,
-  QueryClientProvider,
-  QueryLiteDevtools,
-} from "./lib/query-lite";
+import { QueryClient, QueryClientProvider, QueryLiteDevtools } from "./lib/query-lite";
 import NewServicePage from "./pages/ServicePage/NewServicePage";
 import ServiceLayout from "./pages/ServicePage/ServiceLayout";
 import ServiceSettingsPage from "./pages/ServicePage/ServiceSettingsPage";
 import ServiceDeploymentPage from "./pages/ServicePage/ServiceDeploymentPage";
 import ServiceDeploymentRunsPage from "./pages/ServicePage/ServiceDeploymentRunsPage";
+import CredentialsPage from "./pages/CredentialsPage";
+import OnboardingPage from "./pages/OnboardingPage";
+import AuthGuard from "./pages/AuthGuardPage";
 
 const queryClient = new QueryClient();
 
@@ -30,41 +29,33 @@ function App() {
       <WorkspaceProvider>
         <ThemeProvider>
           <Routes>
-            <Route path="/" element={<Layout />}>
-              <Route path="/dashboard" element={<></>} />
-              <Route path="/bills" element={<CostDashboardPage />} />
-              <Route path="/credentials" element={<></>} />
+            <Route path="/onboarding" element={<OnboardingPage />} />
+            <Route element={<AuthGuard />}>
+              <Route path="/" element={<Layout />}>
+                <Route index element={<Navigate to="/services" replace />} />
+                <Route path="/dashboard" element={<></>} />
+                <Route path="/bills" element={<CostDashboardPage />} />
+                <Route path="/credentials" element={<CredentialsPage />} />
 
-              <Route path="/services" element={<ServicePage />} />
-              <Route path="/services/new" element={<NewServicePage />} />
-              <Route
-                path="/services/:serviceNumber"
-                element={<ServiceLayout />}
-              >
-                <Route index element={<Navigate to="settings" replace />} />
-                <Route path="settings" element={<ServiceSettingsPage />} />
-                <Route path="deployment" element={<ServiceDeploymentPage />} />
-                <Route
-                  path="deployment/:executionId"
-                  element={<ServiceDeploymentRunsPage />}
-                />
+                <Route path="/services" element={<ServicePage />} />
+                <Route path="/services/new" element={<NewServicePage />} />
+                <Route path="/services/:serviceNumber" element={<ServiceLayout />}>
+                  <Route index element={<Navigate to="settings" replace />} />
+                  <Route path="settings" element={<ServiceSettingsPage />} />
+                  <Route path="deployment" element={<ServiceDeploymentPage />} />
+                  <Route path="deployment/:executionId" element={<ServiceDeploymentRunsPage />} />
+                </Route>
+
+                <Route path="/instances" element={<InstancePage />} />
+                <Route path="/storage/:storageName" element={<StorageInfoPage />} />
+                <Route path="/storage" element={<StoragePage />} />
+                <Route path="/database" element={<></>} />
+                <Route path="/testdashboard" element={<TestDashboard />} />
+                <Route path="/testSSE" element={<TestLogViewPage />} />
+                <Route path="/SSE" element={<LogViewPage />} />
+                <Route path="*" element={<p className="text-accent">This is a landing page</p>} />
               </Route>
-
-              <Route path="/instances" element={<InstancePage />} />
-              <Route
-                path="/storage/:storageName"
-                element={<StorageInfoPage />}
-              />
-              <Route path="/storage" element={<StoragePage />} />
-              <Route path="/database" element={<></>} />
-              <Route path="/testdashboard" element={<TestDashboard />} />
-              <Route path="/testSSE" element={<TestLogViewPage />} />
-              <Route path="/SSE" element={<LogViewPage />} />
             </Route>
-            <Route
-              path="*"
-              element={<p className="text-accent">This is a landing page</p>}
-            />
           </Routes>
         </ThemeProvider>
       </WorkspaceProvider>

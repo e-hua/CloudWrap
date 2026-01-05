@@ -1,21 +1,7 @@
 import { app, safeStorage } from 'electron';
 import path from 'path';
 import fs from 'fs-extra';
-
-type AppConfig = {
-  awsRegion: string;
-  roleARN: string;
-  tfStateBucket: string;
-  tfRoleARN: string;
-  isOnboarded: true;
-} | {
-  isOnboarded: false;
-}
-
-type AppSecrets = {
-  awsAccessKeyId: string;
-  awsSecretAccessKey: string;
-}
+import { AppConfig, AppSecrets } from '@shared/onboarding.type';
 
 const CONFIG_PATH = path.join(app.getPath('userData'), 'cloudwrap-config.json');
 
@@ -35,8 +21,12 @@ class ConfigManager {
   static getConfig(): AppConfig & Partial<AppSecrets> {
     try {
       if (!fs.existsSync(CONFIG_PATH)) {
-        throw new Error(`${CONFIG_PATH} does not exist in file system`)
+        const defaultConfig: AppConfig = { isOnboarded: false };
+        
+        fs.ensureDirSync(path.dirname(CONFIG_PATH));
+        fs.writeJsonSync(CONFIG_PATH, defaultConfig, { spaces: 2 });
       }
+
       return fs.readJsonSync(CONFIG_PATH);
     } catch (error) {
       console.error('Failed to read config:', error);

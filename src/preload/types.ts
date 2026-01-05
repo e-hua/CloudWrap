@@ -7,6 +7,7 @@ import { PipelineExecutionSummary, StartPipelineExecutionCommandOutput } from '@
 import { Granularity, ResultByTime } from '@aws-sdk/client-cost-explorer';
 import { _Object, Bucket } from '@aws-sdk/client-s3'
 import { EC2_API_Instance } from '@shared/ec2.type';
+import type { AppConfig, AppSecrets } from '@shared/onboarding.type';
 
 export type IPCSuccessResponse<T> = {
   success: true;
@@ -77,5 +78,6 @@ export type CustomAPI = {
   onboarding: {
     start: (credentials: { accessKey: string; secretKey: string; region: string }) => Promise<IPCSuccessResponse<void>>;
     onLog: (callback: (data: StreamData) => void) => () => void;
+    configs: () => Promise<IPCDataResponse<AppConfig & Partial<AppSecrets>>>;
   }
 }

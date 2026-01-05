@@ -71,6 +71,7 @@ const api: CustomAPI = {
 
   onboarding: {
     start: (credentials) => ipcRenderer.invoke('onboarding:start', credentials),
+    configs: () => ipcRenderer.invoke('onboarding:configs'),
     onLog: (callback) => createInternalListener<StreamData>('onboarding-internal:start', callback)
   }
 }

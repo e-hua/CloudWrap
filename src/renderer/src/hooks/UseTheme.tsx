@@ -9,13 +9,9 @@ const ThemeSetterContext = createContext((val: ThemeType) => {
   console.log(val);
 });
 
-export default function ThemeProvider({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [currentState, setCurrentState] = useState<ThemeType>(() => {
-    return (Cookies.get("theme") as ThemeType | undefined) || "light";
+    return (Cookies.get("theme") as ThemeType | undefined) || "dark";
   });
 
   useEffect(() => {

@@ -1,9 +1,6 @@
 import type { UpdateServicePayload } from "@/apis/services/service.schema";
 import { fetchService } from "@/apis/services/services";
-import type {
-  DBServerType,
-  DBServiceType,
-} from "@/apis/services/services.types";
+import type { DBServerType, DBServiceType } from "@/apis/services/services.types";
 import Button from "@/components/ui/Button";
 import { Select, SelectTrigger, SelectValue } from "@/components/ui/Select";
 import { useMutation, useQuery, useQueryClient } from "@/lib/query-lite";
@@ -36,18 +33,13 @@ type BottomBorderInputProps = {
   onValueChange: (newValue: string) => void;
 };
 
-function BottomBorderInput({
-  name,
-  modifying,
-  value,
-  onValueChange,
-}: BottomBorderInputProps) {
+function BottomBorderInput({ name, modifying, value, onValueChange }: BottomBorderInputProps) {
   if (modifying) {
     return (
       <div className="flex flex-col text-sm w-fit">
         <p className="text-text-secondary">{name}</p>
         <input
-          className="border-0 border-b border-b-text-secondary focus:border-b-accent outline-0 text-text-primary"
+          className="border-0 border-b border-b-text-secondary focus:border-b-accent outline-0 text-text-primary transition-colors duration-300"
           value={value || ""}
           onChange={(event) => onValueChange(event.target.value)}
         />
@@ -67,7 +59,7 @@ function ServiceSettingsPage() {
 
   const { data } = useQuery({
     queryKey: `service-${serviceNumber}`,
-    queryFunction: () => fetchService(Number(serviceNumber)),
+    queryFunction: () => fetchService(Number(serviceNumber))
   });
 
   const [modifyingProject, setModifyingProject] = useState<boolean>(false);
@@ -78,7 +70,7 @@ function ServiceSettingsPage() {
     type: "server",
     // Hardcoded dummy value for testing, need to be updated later
     githubConnectionArn:
-      "arn:aws:codestar-connections:us-east-2:276291856310:connection/e7b8cd7c-295f-4776-9f93-4356f180edd6",
+      "arn:aws:codestar-connections:us-east-2:276291856310:connection/e7b8cd7c-295f-4776-9f93-4356f180edd6"
   });
 
   const queryClient = useQueryClient();
@@ -87,7 +79,7 @@ function ServiceSettingsPage() {
     mutationFunction: async () => {
       // Just a dummy function to trigger the re-fetching
     },
-    onSuccess: () => queryClient.invalidateQuery(`service-${serviceNumber}`),
+    onSuccess: () => queryClient.invalidateQuery(`service-${serviceNumber}`)
   });
 
   useEffect(() => {
@@ -99,7 +91,7 @@ function ServiceSettingsPage() {
           rootDirectory: data?.rootDir,
           instance_type: (data as DBServerType)?.instanceType,
           container_port: (data as DBServerType)?.containerPort,
-          dockerfile_path: (data as DBServerType)?.dockerfilePath,
+          dockerfile_path: (data as DBServerType)?.dockerfilePath
         };
 
         return newPayload;
@@ -156,9 +148,7 @@ function ServiceSettingsPage() {
               size={14}
               className="text-accent hover:text-accent-background"
               onClick={() => {
-                const urlToCopy = data.cloudFrontDomainName.startsWith(
-                  "https://"
-                )
+                const urlToCopy = data.cloudFrontDomainName.startsWith("https://")
                   ? data.cloudFrontDomainName
                   : "https://" + data.cloudFrontDomainName;
 
@@ -291,7 +281,7 @@ function ServiceSpecificDetails({
   data,
   payload,
   setPayload,
-  modifying,
+  modifying
 }: ServiceSpecificDetailsProps) {
   if (payload.type === "server") {
     const serverData = data as DBServerType;
@@ -300,9 +290,7 @@ function ServiceSpecificDetails({
         <BottomBorderInput
           name={"Root Directory"}
           value={payload.rootDirectory}
-          onValueChange={(newVal: string) =>
-            setPayload({ ...payload, rootDirectory: newVal })
-          }
+          onValueChange={(newVal: string) => setPayload({ ...payload, rootDirectory: newVal })}
           modifying={modifying}
         />
 
@@ -310,9 +298,7 @@ function ServiceSpecificDetails({
           {modifying ? (
             <Select
               selectedValue={payload.instance_type ?? ""}
-              onValueChange={(newVal: string) =>
-                setPayload({ ...payload, instance_type: newVal })
-              }
+              onValueChange={(newVal: string) => setPayload({ ...payload, instance_type: newVal })}
             >
               <SelectTrigger>
                 <SelectValue placeholder={"choose a type"} />
@@ -336,9 +322,7 @@ function ServiceSpecificDetails({
         <BottomBorderInput
           name={"Dockerfile Path"}
           value={payload.dockerfile_path}
-          onValueChange={(newVal: string) =>
-            setPayload({ ...payload, dockerfile_path: newVal })
-          }
+          onValueChange={(newVal: string) => setPayload({ ...payload, dockerfile_path: newVal })}
           modifying={modifying}
         />
 
@@ -361,27 +345,21 @@ function ServiceSpecificDetails({
         <BottomBorderInput
           name={"Root Directory"}
           value={payload.rootDirectory}
-          onValueChange={(newVal: string) =>
-            setPayload({ ...payload, rootDirectory: newVal })
-          }
+          onValueChange={(newVal: string) => setPayload({ ...payload, rootDirectory: newVal })}
           modifying={modifying}
         />
 
         <BottomBorderInput
           name={"Build Command"}
           value={payload.buildCommand}
-          onValueChange={(newVal: string) =>
-            setPayload({ ...payload, buildCommand: newVal })
-          }
+          onValueChange={(newVal: string) => setPayload({ ...payload, buildCommand: newVal })}
           modifying={modifying}
         />
 
         <BottomBorderInput
           name={"Publish Directory"}
           value={payload.publishDirectory}
-          onValueChange={(newVal: string) =>
-            setPayload({ ...payload, publishDirectory: newVal })
-          }
+          onValueChange={(newVal: string) => setPayload({ ...payload, publishDirectory: newVal })}
           modifying={modifying}
         />
       </div>
@@ -390,3 +368,4 @@ function ServiceSpecificDetails({
 }
 
 export default ServiceSettingsPage;
+export { BottomBorderInput };
