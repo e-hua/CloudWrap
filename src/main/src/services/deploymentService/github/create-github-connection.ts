@@ -1,18 +1,20 @@
 import type { StrictCredentials } from "@/services/assumeRoleService.js";
 import {
   CodeStarConnectionsClient,
-  CreateConnectionCommand,
+  CreateConnectionCommand
 } from "@aws-sdk/client-codestar-connections";
-import { STRICT_AWS_REGION as region } from "@/config/aws.config.js";
+import { getStrictAwsRegion } from "@/config/aws.config.js";
 
 function createConnectionClient(credential: StrictCredentials) {
+  const region = getStrictAwsRegion();
+
   return new CodeStarConnectionsClient({
-    region: region,
+    region,
     credentials: {
       accessKeyId: credential.AccessKeyId,
       secretAccessKey: credential.SecretAccessKey,
-      sessionToken: credential.SessionToken,
-    },
+      sessionToken: credential.SessionToken
+    }
   });
 }
 
@@ -21,7 +23,7 @@ async function createGithubConnection(credential: StrictCredentials) {
 
   const command = new CreateConnectionCommand({
     ProviderType: "GitHub",
-    ConnectionName: `cloudwrap-user-connection`,
+    ConnectionName: `cloudwrap-user-connection`
   });
 
   const response = await client.send(command);

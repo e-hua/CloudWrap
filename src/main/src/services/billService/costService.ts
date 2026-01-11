@@ -3,23 +3,24 @@ import {
   GetCostAndUsageCommand,
   Granularity,
   type Expression,
-  type ResultByTime,
+  type ResultByTime
 } from "@aws-sdk/client-cost-explorer";
 import type { StrictCredentials } from "@/services/assumeRoleService.js";
-import { STRICT_AWS_REGION as region } from "@/config/aws.config.js";
+import { getStrictAwsRegion } from "@/config/aws.config.js";
 
 type FilterOptions = {
   recordTypes: string[];
 };
 
 function createCostExplorerClient(credential: StrictCredentials) {
+  const region = getStrictAwsRegion();
   return new CostExplorerClient({
-    region: region,
+    region,
     credentials: {
       accessKeyId: credential.AccessKeyId,
       secretAccessKey: credential.SecretAccessKey,
-      sessionToken: credential.SessionToken,
-    },
+      sessionToken: credential.SessionToken
+    }
   });
 }
 
@@ -45,7 +46,7 @@ function getTimePeriod(granularity: Granularity) {
 
   return {
     Start: startDate.toISOString().substring(0, 10),
-    End: currDate.toISOString().substring(0, 10),
+    End: currDate.toISOString().substring(0, 10)
   };
 }
 
@@ -57,8 +58,8 @@ function buildFilter(filterOptions: FilterOptions): Expression | undefined {
     filters.push({
       Dimensions: {
         Key: "RECORD_TYPE",
-        Values: filterOptions.recordTypes,
-      },
+        Values: filterOptions.recordTypes
+      }
     });
   }
 
@@ -79,7 +80,7 @@ async function getCostAndUsage(
     Granularity: granularity,
     Metrics: ["BlendedCost"],
     GroupBy: [{ Type: "DIMENSION", Key: "SERVICE" }],
-    Filter: buildFilter(filterOptions),
+    Filter: buildFilter(filterOptions)
   });
 
   const response = await client.send(command);

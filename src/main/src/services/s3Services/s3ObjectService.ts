@@ -3,26 +3,24 @@ import {
   ListObjectsV2Command,
   PutObjectCommand,
   DeleteObjectCommand,
-  GetObjectCommand,
+  GetObjectCommand
 } from "@aws-sdk/client-s3";
 import type { StrictCredentials } from "@/services/assumeRoleService.js";
-import { STRICT_AWS_REGION as region } from "@/config/aws.config.js";
+import { getStrictAwsRegion } from "@/config/aws.config.js";
 
-export async function listObjects(
-  credential: StrictCredentials,
-  bucketName: string
-) {
+export async function listObjects(credential: StrictCredentials, bucketName: string) {
+  const region = getStrictAwsRegion();
   const client = new S3Client({
-    region: region,
+    region,
     credentials: {
       accessKeyId: credential.AccessKeyId,
       secretAccessKey: credential.SecretAccessKey,
-      sessionToken: credential.SessionToken,
-    },
+      sessionToken: credential.SessionToken
+    }
   });
 
   const input = {
-    Bucket: bucketName,
+    Bucket: bucketName
   };
 
   const command = new ListObjectsV2Command(input);
@@ -39,42 +37,38 @@ export async function putObject(
   contentType: string
 ) {
   const client = new S3Client({
-    region: region,
     credentials: {
       accessKeyId: credential.AccessKeyId,
       secretAccessKey: credential.SecretAccessKey,
-      sessionToken: credential.SessionToken,
-    },
+      sessionToken: credential.SessionToken
+    }
   });
 
   const input = {
     Bucket: bucketName,
     Key: key,
     Body: content,
-    ContentType: contentType,
+    ContentType: contentType
   };
 
   const command = new PutObjectCommand(input);
   await client.send(command);
 }
 
-export async function deleteObject(
-  credential: StrictCredentials,
-  bucketName: string,
-  key: string
-) {
+export async function deleteObject(credential: StrictCredentials, bucketName: string, key: string) {
+  const region = getStrictAwsRegion();
   const client = new S3Client({
-    region: region,
+    region,
     credentials: {
       accessKeyId: credential.AccessKeyId,
       secretAccessKey: credential.SecretAccessKey,
-      sessionToken: credential.SessionToken,
-    },
+      sessionToken: credential.SessionToken
+    }
   });
 
   const input = {
     Bucket: bucketName,
-    Key: key,
+    Key: key
   };
 
   const command = new DeleteObjectCommand(input);
@@ -82,30 +76,27 @@ export async function deleteObject(
   return response;
 }
 
-export async function getObject(
-  credential: StrictCredentials,
-  bucketName: string,
-  key: string
-) {
+export async function getObject(credential: StrictCredentials, bucketName: string, key: string) {
+  const region = getStrictAwsRegion();
   const client = new S3Client({
-    region: region,
+    region,
     credentials: {
       accessKeyId: credential.AccessKeyId,
       secretAccessKey: credential.SecretAccessKey,
-      sessionToken: credential.SessionToken,
-    },
+      sessionToken: credential.SessionToken
+    }
   });
 
   const input = {
     Bucket: bucketName,
-    Key: key,
+    Key: key
   };
 
   const command = new GetObjectCommand(input);
-  const {Body: body, ContentType: type}= await client.send(command);
+  const { Body: body, ContentType: type } = await client.send(command);
   if (!body) {
     throw new Error("The object we're trying to get does not exist");
   }
   const byteArray = await body.transformToByteArray();
-  return {byteArray, type};
+  return { byteArray, type };
 }

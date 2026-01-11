@@ -5,51 +5,51 @@ import {
   GetPipelineStateCommand,
   ListActionExecutionsCommand,
   PipelineExecutionStatus,
-  type ActionExecutionDetail,
+  type ActionExecutionDetail
 } from "@aws-sdk/client-codepipeline";
-import { STRICT_AWS_REGION as region } from "@/config/aws.config.js";
+import { getStrictAwsRegion } from "@/config/aws.config.js";
 import { getErrorMessage } from "@/utils/errors.js";
-import {
-  BatchGetBuildsCommand,
-  CodeBuildClient,
-} from "@aws-sdk/client-codebuild";
+import { BatchGetBuildsCommand, CodeBuildClient } from "@aws-sdk/client-codebuild";
 import {
   CloudWatchLogsClient,
   GetLogEventsCommand,
-  type GetLogEventsCommandOutput,
+  type GetLogEventsCommandOutput
 } from "@aws-sdk/client-cloudwatch-logs";
 import { sleep } from "@/utils/sleep.js";
 
 function createPipeLineClient(credential: StrictCredentials) {
+  const region = getStrictAwsRegion();
   return new CodePipelineClient({
-    region: region,
+    region,
     credentials: {
       accessKeyId: credential.AccessKeyId,
       secretAccessKey: credential.SecretAccessKey,
-      sessionToken: credential.SessionToken,
-    },
+      sessionToken: credential.SessionToken
+    }
   });
 }
 
 function createCodeBuildClient(credential: StrictCredentials) {
+  const region = getStrictAwsRegion();
   return new CodeBuildClient({
-    region: region,
+    region,
     credentials: {
       accessKeyId: credential.AccessKeyId,
       secretAccessKey: credential.SecretAccessKey,
-      sessionToken: credential.SessionToken,
-    },
+      sessionToken: credential.SessionToken
+    }
   });
 }
 
 function createCloudWatchClient(credential: StrictCredentials) {
+  const region = getStrictAwsRegion();
   return new CloudWatchLogsClient({
-    region: region,
+    region,
     credentials: {
       accessKeyId: credential.AccessKeyId,
       secretAccessKey: credential.SecretAccessKey,
-      sessionToken: credential.SessionToken,
-    },
+      sessionToken: credential.SessionToken
+    }
   });
 }
 
@@ -80,14 +80,14 @@ async function streamPipelineStatus(
   const client = createPipeLineClient(credential);
   const executionCommand = new GetPipelineExecutionCommand({
     pipelineName,
-    pipelineExecutionId: executionId,
+    pipelineExecutionId: executionId
   });
 
   const actionCommand = new ListActionExecutionsCommand({
     pipelineName,
     filter: {
-      pipelineExecutionId: executionId,
-    },
+      pipelineExecutionId: executionId
+    }
   });
 
   const stateCommand = new GetPipelineStateCommand({ name: pipelineName });
@@ -106,7 +106,7 @@ async function streamPipelineStatus(
         if (!info_sent) {
           onStream({
             source: "sys-info",
-            data: `Pipeline running, current state: ${pipelineExecution.status}`,
+            data: `Pipeline running, current state: ${pipelineExecution.status}`
           });
           info_sent = true;
         }
@@ -117,39 +117,33 @@ async function streamPipelineStatus(
 
       const [detailsResponse, stateResponse] = await Promise.all([
         client.send(actionCommand),
-        client.send(stateCommand),
+        client.send(stateCommand)
       ]);
 
-      const curr_all_execution_details =
-        detailsResponse?.actionExecutionDetails ?? [];
+      const curr_all_execution_details = detailsResponse?.actionExecutionDetails ?? [];
       const stageStates = stateResponse?.stageStates ?? [];
 
-      const enriched_execution_details = curr_all_execution_details.map(
-        (detail) => {
-          const matchingStage = stageStates.find(
-            (state) => state.stageName === detail.stageName
-          );
-          const matchingAction = matchingStage?.actionStates?.find(
-            (state) => state.actionName === detail.actionName
-          );
+      const enriched_execution_details = curr_all_execution_details.map((detail) => {
+        const matchingStage = stageStates.find((state) => state.stageName === detail.stageName);
+        const matchingAction = matchingStage?.actionStates?.find(
+          (state) => state.actionName === detail.actionName
+        );
 
-          if (matchingAction?.latestExecution?.externalExecutionId) {
-            return {
-              ...detail,
-              // We inject the ID here so the frontend can read it
-              output: {
-                ...detail.output,
-                executionResult: {
-                  ...detail.output?.executionResult,
-                  externalExecutionId:
-                    matchingAction.latestExecution.externalExecutionId,
-                },
-              },
-            };
-          }
-          return detail;
+        if (matchingAction?.latestExecution?.externalExecutionId) {
+          return {
+            ...detail,
+            // We inject the ID here so the frontend can read it
+            output: {
+              ...detail.output,
+              executionResult: {
+                ...detail.output?.executionResult,
+                externalExecutionId: matchingAction.latestExecution.externalExecutionId
+              }
+            }
+          };
         }
-      );
+        return detail;
+      });
 
       const current_state_signature = enriched_execution_details
         .map((elem) => `${elem.stageName}:${elem.actionName}:${elem.status}`)
@@ -160,7 +154,7 @@ async function streamPipelineStatus(
       if (current_state_signature !== most_recent_status_key) {
         onStream({
           source: "pipeline-status",
-          data: enriched_execution_details,
+          data: enriched_execution_details
         });
         most_recent_status_key = current_state_signature;
       }
@@ -184,7 +178,7 @@ async function streamBuildLogs(
 ) {
   let running: boolean = true;
   let info_sent: boolean = false;
-  let next_token = undefined;
+  let next_token: string | undefined = undefined;
 
   const codeBuildClient = createCodeBuildClient(credential);
   const cloudWatchLogsClient = createCloudWatchClient(credential);
@@ -201,7 +195,7 @@ async function streamBuildLogs(
         if (!info_sent) {
           onStream({
             source: "sys-info",
-            data: `Code building, current status ${build?.buildStatus}`,
+            data: `Code building, current status ${build?.buildStatus}`
           });
           info_sent = true;
         }
@@ -220,17 +214,15 @@ async function streamBuildLogs(
           // Takes precedence if exists
           nextToken: next_token,
           // If there's no "nextToken", start from the beginning
-          startFromHead: true,
+          startFromHead: true
         });
 
-        const logs: GetLogEventsCommandOutput = await cloudWatchLogsClient.send(
-          logCommand
-        );
+        const logs: GetLogEventsCommandOutput = await cloudWatchLogsClient.send(logCommand);
 
         for (const event of logs?.events ?? []) {
           onStream({
             source: "build-logs",
-            data: event.message ?? "No message",
+            data: event.message ?? "No message"
           });
         }
 

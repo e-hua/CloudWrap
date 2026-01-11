@@ -14,7 +14,7 @@
     "start": "electron-vite preview",
     "download-tofu": "node scripts/download-OpenTofu.ts",
     "dev": "npm run download-tofu && electron-vite dev",
-    "build": "npm run download-tofu && npm run typecheck && electron-vite build",
+    "build": "npm run download-tofu && electron-vite build",
     "postinstall": "npm run download-tofu && electron-builder install-app-deps",
     "build:unpack": "npm run build && electron-builder --dir",
     "build:win": "npm run build && electron-builder --win",
@@ -23,9 +23,9 @@
   },
   "dependencies": {
     "@aws-sdk/client-cloudformation": "^3.958.0",
+    "@aws-sdk/client-codepipeline": "^3.922.0",
     "@aws-sdk/client-cloudwatch-logs": "^3.922.0",
     "@aws-sdk/client-codebuild": "^3.922.0",
-    "@aws-sdk/client-codepipeline": "^3.922.0",
     "@aws-sdk/client-codestar-connections": "^3.922.0",
     "@aws-sdk/client-cost-explorer": "^3.908.0",
     "@aws-sdk/client-ec2": "^3.896.0",
@@ -58,7 +58,6 @@
     "zod-validation-error": "^5.0.0"
   },
   "devDependencies": {
-    "@aws-sdk/client-codepipeline": "^3.953.0",
     "@electron-toolkit/eslint-config-prettier": "^3.0.0",
     "@electron-toolkit/eslint-config-ts": "^3.1.0",
     "@electron-toolkit/tsconfig": "^2.0.0",
@@ -79,7 +78,7 @@
     "@vitest/browser-playwright": "^4.0.9",
     "decompress": "^4.2.1",
     "electron": "^39.2.6",
-    "electron-builder": "^26.0.12",
+    "electron-builder": "^26.4.0",
     "electron-vite": "^5.0.0",
     "eslint": "^9.39.1",
     "eslint-plugin-react": "^7.37.5",

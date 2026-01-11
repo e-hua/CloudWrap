@@ -7,10 +7,10 @@ import {
   TerminateInstancesCommand,
   RebootInstancesCommand,
   _InstanceType,
-  ResourceType,
+  ResourceType
 } from "@aws-sdk/client-ec2";
 
-import { STRICT_AWS_REGION as region } from "@/config/aws.config.js";
+import { getStrictAwsRegion } from "@/config/aws.config.js";
 import type { StrictCredentials } from "@/services/assumeRoleService.js";
 
 type ValidInstanceType = (typeof _InstanceType)[keyof typeof _InstanceType];
@@ -19,17 +19,18 @@ const AMIMapping = {
   // Canonical, Ubuntu, 24.04, amd64 noble image
   Linux: "ami-02d26659fd82cf299",
   // Microsoft Windows Server 2025 Full Locale English
-  Windows: "ami-066eb5725566530f0",
+  Windows: "ami-066eb5725566530f0"
 };
 
 function createEC2Client(credential: StrictCredentials) {
+  const region = getStrictAwsRegion();
   return new EC2Client({
-    region: region,
+    region,
     credentials: {
       accessKeyId: credential.AccessKeyId,
       secretAccessKey: credential.SecretAccessKey,
-      sessionToken: credential.SessionToken,
-    },
+      sessionToken: credential.SessionToken
+    }
   });
 }
 
@@ -71,9 +72,9 @@ export async function launchInstance(
     TagSpecifications: [
       {
         ResourceType: "instance" as ResourceType,
-        Tags: [{ Key: "Name", Value: instanceName }],
-      },
-    ],
+        Tags: [{ Key: "Name", Value: instanceName }]
+      }
+    ]
   };
 
   const command = new RunInstancesCommand(input);
@@ -81,52 +82,40 @@ export async function launchInstance(
   return response;
 }
 
-export async function stopInstance(
-  credential: StrictCredentials,
-  instanceId: string
-) {
+export async function stopInstance(credential: StrictCredentials, instanceId: string) {
   const client = createEC2Client(credential);
   const command = new StopInstancesCommand({
-    InstanceIds: [instanceId],
+    InstanceIds: [instanceId]
   });
 
   const response = await client.send(command);
   return response;
 }
 
-export async function startInstance(
-  credential: StrictCredentials,
-  instanceId: string
-) {
+export async function startInstance(credential: StrictCredentials, instanceId: string) {
   const client = createEC2Client(credential);
   const command = new StartInstancesCommand({
-    InstanceIds: [instanceId],
+    InstanceIds: [instanceId]
   });
 
   const response = await client.send(command);
   return response;
 }
 
-export async function terminateInstance(
-  credential: StrictCredentials,
-  instanceId: string
-) {
+export async function terminateInstance(credential: StrictCredentials, instanceId: string) {
   const client = createEC2Client(credential);
   const command = new TerminateInstancesCommand({
-    InstanceIds: [instanceId],
+    InstanceIds: [instanceId]
   });
 
   const response = await client.send(command);
   return response;
 }
 
-export async function restartInstance(
-  credential: StrictCredentials,
-  instanceId: string
-) {
+export async function restartInstance(credential: StrictCredentials, instanceId: string) {
   const client = createEC2Client(credential);
   const command = new RebootInstancesCommand({
-    InstanceIds: [instanceId],
+    InstanceIds: [instanceId]
   });
 
   const response = await client.send(command);

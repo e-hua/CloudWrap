@@ -1,48 +1,62 @@
 import path from "path";
-import {
-  STRICT_TF_STATE_BUCKET as state_bucket_name,
-  STRICT_TF_ROLE_ARN as tf_role_arn,
-} from "@/config/aws.config.js";
+import { getStrictTofuConfig } from "@/config/aws.config.js";
 import { getErrorMessage } from "@/utils/errors.js";
 
-import {type RunTofuCommand, type StreamData} from "../runTofu.js";
-import type {DBServerType, DBSiteInput, DBSiteType} from "@/db/queries/Services/Services.types.js";
-import {type StrictCredentials} from "@/services/assumeRoleService.js";
+import { type RunTofuCommand, type StreamData } from "../runTofu.js";
+import type {
+  DBServerType,
+  DBSiteInput,
+  DBSiteType
+} from "@/db/queries/Services/Services.types.js";
+import { type StrictCredentials } from "@/services/assumeRoleService.js";
 
-
-import type {UpdateStaticSiteInput} from "@/services/deploymentService/deployment.schema.js";
-import type {ServiceOperationDeps} from "@/services/deploymentService/deployment.types.js";
+import type { UpdateStaticSiteInput } from "@/services/deploymentService/deployment.schema.js";
+import type { ServiceOperationDeps } from "@/services/deploymentService/deployment.types.js";
 import Database from "better-sqlite3";
-import type {StartPipelineExecutionCommandOutput} from "@aws-sdk/client-codepipeline/dist-types/commands/index.js";
+import type { StartPipelineExecutionCommandOutput } from "@aws-sdk/client-codepipeline/dist-types/commands/index.js";
 import { templateDirPath } from "../pathConfig.js";
 
 type UpdateStaticSiteDeps = ServiceOperationDeps & {
   serviceReader: {
-    readServiceById: (serviceId: (number | bigint)) => (DBServerType | DBSiteType)
+    readServiceById: (serviceId: number | bigint) => DBServerType | DBSiteType;
   };
   serviceUpdater: {
-    updateSiteTransaction: Database.Transaction<(service_id: (number | bigint), input: Omit<DBSiteInput, "type" | "name">) => (bigint | number)>;
+    updateSiteTransaction: Database.Transaction<
+      (service_id: number | bigint, input: Omit<DBSiteInput, "type" | "name">) => bigint | number
+    >;
   };
-  runTofuAndCollect: (command:  Omit<RunTofuCommand, 'onStream'>) => Promise<string>;
-  manualDeploy: (credential: StrictCredentials, pipelineName: string) => Promise<StartPipelineExecutionCommandOutput>
-  assumeRole: () => Promise<StrictCredentials>
-}
+  runTofuAndCollect: (command: Omit<RunTofuCommand, "onStream">) => Promise<string>;
+  manualDeploy: (
+    credential: StrictCredentials,
+    pipelineName: string
+  ) => Promise<StartPipelineExecutionCommandOutput>;
+  assumeRole: () => Promise<StrictCredentials>;
+};
 
 type UpdateStaticSiteInputs = {
   service_id: number;
   inputs: UpdateStaticSiteInput;
   onStreamCallback: (data: StreamData) => void;
-}
+};
 
 async function updateStaticSite(
-  {service_id, inputs, onStreamCallback} : UpdateStaticSiteInputs,
-  {serviceUpdater, serviceReader, runTofu, runTofuAndCollect, mkdtemp, copy, rm, tmpdir, manualDeploy, assumeRole}: UpdateStaticSiteDeps
+  { service_id, inputs, onStreamCallback }: UpdateStaticSiteInputs,
+  {
+    serviceUpdater,
+    serviceReader,
+    runTofu,
+    runTofuAndCollect,
+    mkdtemp,
+    copy,
+    rm,
+    tmpdir,
+    manualDeploy,
+    assumeRole
+  }: UpdateStaticSiteDeps
 ): Promise<void> {
-  const templatePath = path.join(
-    templateDirPath,
-    "opentofu",
-    "static-site"
-  );
+  const { appServiceRoleArn, tfStateBucket } = getStrictTofuConfig();
+
+  const templatePath = path.join(templateDirPath, "opentofu", "static-site");
 
   // Using temporary folder to carry out the deployment
   // E.g. final directory path: '/tmp/cloudwrap-deployment-aB1xZ2'
@@ -52,20 +66,20 @@ async function updateStaticSite(
     await copy(templatePath, tempDir);
     onStreamCallback({
       source: "sys-info",
-      data: "Finished copying the template files",
+      data: "Finished copying the template files"
     });
 
     onStreamCallback({
       source: "sys-info",
-      data: "Start initializing the project",
+      data: "Start initializing the project"
     });
 
-    const {readServiceById} = serviceReader;
+    const { readServiceById } = serviceReader;
 
-    const oldSiteService = readServiceById(service_id) as DBSiteType | undefined
+    const oldSiteService = readServiceById(service_id) as DBSiteType | undefined;
 
-    if (!oldSiteService || oldSiteService.type !== 'static-site') {
-      throw new Error(`Service with ID ${service_id} not found as static-site`)
+    if (!oldSiteService || oldSiteService.type !== "static-site") {
+      throw new Error(`Service with ID ${service_id} not found as static-site`);
     }
 
     const updateSiteInput: Omit<DBSiteInput, "type" | "name"> = {
@@ -80,31 +94,31 @@ async function updateStaticSite(
       publishDirectory: inputs.publishDirectory || oldSiteService.publishDirectory,
       customizedDomainName: inputs.customizedDomainName || oldSiteService.customizedDomainName,
       acmCertificateARN: inputs.acmCertificateArn || oldSiteService.acmCertificateARN
-    }
+    };
 
     const initArgs = [
       "init",
       "-reconfigure",
-      `-backend-config=bucket=${state_bucket_name}`,
+      `-backend-config=bucket=${tfStateBucket}`,
       `-backend-config=key=${oldSiteService.name}/terraform.tfstate`,
-      `-backend-config=region=${updateSiteInput.region}`,
+      `-backend-config=region=${updateSiteInput.region}`
     ];
 
     // Run tofu init command
     await runTofu({
       args: initArgs,
       dirPath: tempDir,
-      onStream: onStreamCallback,
+      onStream: onStreamCallback
     });
 
     onStreamCallback({
       source: "sys-info",
-      data: "Finished initializing the project!",
+      data: "Finished initializing the project!"
     });
 
     onStreamCallback({
       source: "sys-info",
-      data: "Start applying modifications to the project, might take a couple of minutes",
+      data: "Start applying modifications to the project, might take a couple of minutes"
     });
 
     const applyArgs = [
@@ -112,14 +126,14 @@ async function updateStaticSite(
       "-auto-approve",
       `-var=bucket_name=${`${oldSiteService.name}-site-bucket`}`,
       `-var=project_name=${oldSiteService.name}`,
-      `-var=execution_role_arn=${tf_role_arn}`,
+      `-var=execution_role_arn=${appServiceRoleArn}`,
       `-var=aws_region=${updateSiteInput.region}`,
       `-var=github_repo_id=${updateSiteInput.repoId}`,
       `-var=github_branch_name=${updateSiteInput.branchName}`,
       `-var=github_connection_arn=${inputs.githubConnectionArn}`,
       `-var=root_directory=${updateSiteInput.rootDir}`,
       `-var=build_command=${updateSiteInput.buildCommand}`,
-      `-var=publish_directory=${updateSiteInput.publishDirectory}`,
+      `-var=publish_directory=${updateSiteInput.publishDirectory}`
     ];
 
     if (updateSiteInput.customizedDomainName) {
@@ -134,25 +148,25 @@ async function updateStaticSite(
     await runTofu({
       args: applyArgs,
       dirPath: tempDir,
-      onStream: onStreamCallback,
+      onStream: onStreamCallback
     });
 
     onStreamCallback({
       source: "sys-info",
-      data: "Retrieving the service info and updating them in the local database",
+      data: "Retrieving the service info and updating them in the local database"
     });
 
-    const collectArgs = ['output', '-json']
+    const collectArgs = ["output", "-json"];
 
-    const jsonOutputs = await runTofuAndCollect({args: collectArgs, dirPath: tempDir})
-    const outputs = JSON.parse(jsonOutputs)
+    const jsonOutputs = await runTofuAndCollect({ args: collectArgs, dirPath: tempDir });
+    const outputs = JSON.parse(jsonOutputs);
 
-    const {updateSiteTransaction} = serviceUpdater;
-    updateSiteInput.cloudFrontDomainName = outputs.cloudfront_domain_name.value
+    const { updateSiteTransaction } = serviceUpdater;
+    updateSiteInput.cloudFrontDomainName = outputs.cloudfront_domain_name.value;
 
     updateSiteTransaction(service_id, updateSiteInput);
     const credential = await assumeRole();
-    await manualDeploy(credential, `${oldSiteService.name}-pipeline`)
+    await manualDeploy(credential, `${oldSiteService.name}-pipeline`);
   } catch (err) {
     onStreamCallback({ source: "sys-failure", data: getErrorMessage(err) });
     throw err;
@@ -160,11 +174,11 @@ async function updateStaticSite(
     await rm(tempDir, { recursive: true, force: true });
     onStreamCallback({
       source: "sys-info",
-      data: "Finished deleting the temporary deployment workspace",
+      data: "Finished deleting the temporary deployment workspace"
     });
   }
 }
 
 export { updateStaticSite };
-export type {UpdateStaticSiteInput}
+export type { UpdateStaticSiteInput };
 export type { UpdateStaticSiteInputs, UpdateStaticSiteDeps };

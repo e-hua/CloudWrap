@@ -2,18 +2,19 @@ import type { StrictCredentials } from "@/services/assumeRoleService.js";
 import {
   CodePipelineClient,
   ListPipelineExecutionsCommand,
-  ListPipelinesCommand,
+  ListPipelinesCommand
 } from "@aws-sdk/client-codepipeline";
-import { STRICT_AWS_REGION as region } from "@/config/aws.config.js";
+import { getStrictAwsRegion } from "@/config/aws.config.js";
 
 function createPipeLineClient(credential: StrictCredentials) {
+  const region = getStrictAwsRegion();
   return new CodePipelineClient({
-    region: region,
+    region,
     credentials: {
       accessKeyId: credential.AccessKeyId,
       secretAccessKey: credential.SecretAccessKey,
-      sessionToken: credential.SessionToken,
-    },
+      sessionToken: credential.SessionToken
+    }
   });
 }
 
@@ -26,15 +27,12 @@ async function listAllPipelines(credential: StrictCredentials) {
   return response.pipelines || [];
 }
 
-async function getPipelineHistory(
-  credential: StrictCredentials,
-  pipelineName: string
-) {
+async function getPipelineHistory(credential: StrictCredentials, pipelineName: string) {
   const pipelineClient = createPipeLineClient(credential);
 
   const command = new ListPipelineExecutionsCommand({
     pipelineName: pipelineName,
-    maxResults: 50,
+    maxResults: 50
   });
 
   const response = await pipelineClient.send(command);
