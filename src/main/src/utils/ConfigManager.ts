@@ -1,9 +1,9 @@
-import { app, safeStorage } from 'electron';
-import path from 'path';
-import fs from 'fs-extra';
-import { AppConfig, AppSecrets } from '@shared/onboarding.type';
+import { app, safeStorage } from "electron";
+import path from "path";
+import fs from "fs-extra";
+import { AppConfig, AppSecrets } from "@shared/onboarding.type";
 
-const CONFIG_PATH = path.join(app.getPath('userData'), 'cloudwrap-config.json');
+const CONFIG_PATH = path.join(app.getPath("userData"), "cloudwrap-config.json");
 
 class ConfigManager {
   // We're using normal JSON files to store the config files + the encrypted secrets
@@ -13,8 +13,8 @@ class ConfigManager {
       const newConfig = { ...current, ...data };
       fs.writeJsonSync(CONFIG_PATH, newConfig, { spaces: 2 });
     } catch (error) {
-      console.error('Failed to save config:', error);
-      throw new Error('Could not save configuration');
+      console.error("Failed to save config:", error);
+      throw new Error("Could not save configuration");
     }
   }
 
@@ -22,14 +22,14 @@ class ConfigManager {
     try {
       if (!fs.existsSync(CONFIG_PATH)) {
         const defaultConfig: AppConfig = { isOnboarded: false };
-        
+
         fs.ensureDirSync(path.dirname(CONFIG_PATH));
         fs.writeJsonSync(CONFIG_PATH, defaultConfig, { spaces: 2 });
       }
 
       return fs.readJsonSync(CONFIG_PATH);
     } catch (error) {
-      console.error('Failed to read config:', error);
+      console.error("Failed to read config:", error);
       return { isOnboarded: false };
     }
   }
@@ -38,9 +38,9 @@ class ConfigManager {
     if (!safeStorage.isEncryptionAvailable()) {
       throw new Error("OS-provided cryptography system is not available.");
     }
-    
-    const encId = safeStorage.encryptString(awsAccessKeyId).toString('hex');
-    const encSecret = safeStorage.encryptString(awsSecretAccessKey).toString('hex');
+
+    const encId = safeStorage.encryptString(awsAccessKeyId).toString("hex");
+    const encSecret = safeStorage.encryptString(awsSecretAccessKey).toString("hex");
 
     ConfigManager.saveConfig({
       awsAccessKeyId: encId,
@@ -48,7 +48,7 @@ class ConfigManager {
     });
   }
 
-  static getCredentials() {
+  static getSecrets() {
     const config = ConfigManager.getConfig();
 
     if (!config.awsAccessKeyId || !config.awsSecretAccessKey) {
@@ -60,16 +60,16 @@ class ConfigManager {
     }
 
     try {
-      const accessKey = safeStorage.decryptString(Buffer.from(config.awsAccessKeyId, 'hex'));
-      const secretKey = safeStorage.decryptString(Buffer.from(config.awsSecretAccessKey, 'hex'));
+      const accessKey = safeStorage.decryptString(Buffer.from(config.awsAccessKeyId, "hex"));
+      const secretKey = safeStorage.decryptString(Buffer.from(config.awsSecretAccessKey, "hex"));
 
       return {
         accessKeyId: accessKey,
-        secretAccessKey: secretKey,
+        secretAccessKey: secretKey
       };
     } catch (error) {
       console.error("Decryption failed:", error);
-      throw error
+      throw error;
     }
   }
 
@@ -78,4 +78,4 @@ class ConfigManager {
   }
 }
 
-export {ConfigManager}
+export { ConfigManager };

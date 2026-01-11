@@ -12,7 +12,7 @@ class QueryClient {
   getQuery<T>({
     queryKey,
     queryFunction,
-    cacheTime,
+    cacheTime
   }: Required<Omit<QueryOptions<T>, "staleTime">>): Query<T> {
     const queryFound = this.queries.get(queryKey);
 
@@ -30,13 +30,15 @@ class QueryClient {
     this.queries.delete(query.queryKey);
   }
 
+  removeQueryWithKey(queryKey: string) {
+    this.queries.delete(queryKey);
+  }
+
   subscribe(callback: () => void) {
     this.subscribers.push(callback);
 
     return () => {
-      this.subscribers = this.subscribers.filter(
-        (subscriber) => subscriber !== callback
-      );
+      this.subscribers = this.subscribers.filter((subscriber) => subscriber !== callback);
     };
   }
 

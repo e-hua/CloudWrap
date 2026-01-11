@@ -53,6 +53,8 @@
   --color-chart-olive: var(--chart-olive);
 
   --color-badge: var(--bg-badge);
+  --color-amazon: var(--amazon-orange);
+  --color-opentofu: var(--opentofu-blue);
 }
 
 [data-theme="light"] {
@@ -103,6 +105,9 @@
   --chart-olive: rgba(128, 128, 0, 0.9); /* olive */
 
   --bg-badge: #e6e6e6;
+
+  --amazon-orange: #ff9900;
+  --opentofu-blue: #00a3e0;
 }
 
 [data-theme="dark"] {
@@ -129,7 +134,7 @@
 
   --success: var(--color-green-200);
   --success-background: var(--color-green-600);
-  --info: var(--color-blue-200);
+  --info: var(--color-blue-300);
   --info-background: var(--color-blue-600);
   --careful: var(--color-yellow-200);
   --careful-background: var(--color-yellow-600);
@@ -154,6 +159,9 @@
   --chart-olive: rgba(180, 180, 80, 0.9); /* olive */
 
   --bg-badge: #292929;
+
+  --amazon-orange: #ff9900;
+  --opentofu-blue: #00a3e0;
 }
 
 html,

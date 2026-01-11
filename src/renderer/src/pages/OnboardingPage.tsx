@@ -12,6 +12,7 @@ import Button from "@/components/ui/Button";
 import LogView from "./ServicePage/LogViews/LogView";
 import { LogData } from "@/hooks/useStream";
 import { useNavigate } from "react-router";
+import { useQueryClient } from "@/lib/query-lite";
 
 type Region = {
   id: string;
@@ -80,11 +81,15 @@ function OnboardingPage() {
   const [formData, setFormData] = useState({
     accessKey: "",
     secretKey: "",
-    region: "us-east-1"
+    region: "ap-southeast-1"
   });
 
-  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [haveSubmitted, setHaveSubmitted] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
+
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   return (
     <div
@@ -114,17 +119,15 @@ function OnboardingPage() {
           flex flex-col gap-2 items-start"
             >
               <div className="flex flex-col items-center gap-2">
-                <div className="w-full flex flex-row items-center gap-2 ">
-                  <AlertTriangle className="w-5 h-5 text-careful-background shrink-0" />
-                  <span className="font-medium text-sm text-careful-background">
-                    Do not use your AWS Root Account
-                  </span>
+                <div className="w-full flex flex-row items-center gap-2 text-careful dark:text-careful-background">
+                  <AlertTriangle className="w-5 h-5  shrink-0" />
+                  <span className="font-medium text-sm">Do not use your AWS Root Account</span>
                 </div>
 
                 <p className="text-xs text-text-secondary leading-relaxed">
                   Please create a dedicated IAM User (e.g.
                   <code className="text-careful">cloudwrap-admin</code>) with
-                  <code className="bg-black/30 px-1 py-0.5 rounded mx-1 text-careful">
+                  <code className=" dark:bg-black/30 px-1 py-0.5 rounded mx-1 text-careful">
                     AdministratorAccess
                   </code>
                 </p>
@@ -139,7 +142,9 @@ function OnboardingPage() {
                   <strong>Daily Use:</strong>
                   <p>
                     Once onboarded, CloudWrap purely uses
-                    <strong className="px-1 py-0.5 rounded mx-1 bg-black/30">sts:AssumeRole</strong>
+                    <strong className="px-1 py-0.5 rounded mx-1 dark:bg-black/30 text-careful dark:text-text-secondary/80">
+                      sts:AssumeRole
+                    </strong>
                     to perform operations, keeping your long-term credentials safe.
                   </p>
                 </li>
@@ -153,11 +158,9 @@ function OnboardingPage() {
           rounded-lg p-4 
           flex flex-col gap-3 items-start"
             >
-              <div className="flex items-center gap-2">
-                <ShieldCheck className="w-5 h-5 text-success-background" />
-                <span className="font-medium text-sm text-success-background">
-                  Security Guarantee
-                </span>
+              <div className="flex items-center gap-2 text-success dark:text-success-background">
+                <ShieldCheck className="w-5 h-5 " />
+                <span className="font-medium text-sm">Security Guarantee</span>
               </div>
 
               <ul className="w-full grid grid-cols-1 gap-2 text-text-secondary text-xs">
@@ -199,7 +202,7 @@ function OnboardingPage() {
                 modifying
                 value={formData.accessKey}
                 onValueChange={(value) => {
-                  if (!isSubmitted) setFormData((prev) => ({ ...prev, accessKey: value }));
+                  if (!isSubmitting) setFormData((prev) => ({ ...prev, accessKey: value }));
                 }}
               />
               <BottomBorderInput
@@ -207,7 +210,7 @@ function OnboardingPage() {
                 modifying
                 value={formData.secretKey}
                 onValueChange={(value) => {
-                  if (!isSubmitted) setFormData((prev) => ({ ...prev, secretKey: value }));
+                  if (!isSubmitting) setFormData((prev) => ({ ...prev, secretKey: value }));
                 }}
               />
             </div>
@@ -216,7 +219,7 @@ function OnboardingPage() {
               <Select
                 selectedValue={formData.region}
                 onValueChange={(val) => {
-                  if (!isSubmitted) setFormData((prev) => ({ ...prev, region: val }));
+                  if (!isSubmitting) setFormData((prev) => ({ ...prev, region: val }));
                 }}
               >
                 <SelectTrigger>
@@ -229,12 +232,14 @@ function OnboardingPage() {
             <div className="flex-1 flex items-center justify-center">
               <Button
                 className="w-fit"
-                variation={isSubmitted ? "disabled" : "default"}
+                variation={isSubmitting ? "disabled" : "default"}
                 onClick={() => {
-                  setIsSubmitted(true);
+                  setIsSubmitting(true);
+                  setHaveSubmitted(true);
+                  setRetryCount((prev) => prev + 1);
                 }}
               >
-                <p>{isSubmitted ? "Submitting" : "Submit"}</p>
+                <p>{isSubmitting ? "Submitting" : retryCount !== 0 ? "Retry" : "Submit"}</p>
               </Button>
             </div>
           </div>
@@ -242,19 +247,20 @@ function OnboardingPage() {
 
         <div className="flex-1 w-full md:h-full flex items-center">
           <div className="w-full h-fit bg-[#ffffff] dark:bg-[#1e1e1e] border border-sidebar-border rounded-xl overflow-hidden">
-            {isSubmitted ? (
+            {haveSubmitted ? (
               <LogView
-                key="real-deployment"
+                key={`real-deployment-${retryCount}`}
                 enabled={true}
                 starter={async () => {
-                  await window.api.onboarding.start(formData);
-                  setIsSubmitted(true);
-                }}
-                endOfStreamCallback={() => {
-                  // Giving the users some time to watch the CloudFormation logs
-                  setTimeout(() => {
+                  try {
+                    await window.api.onboarding.start(formData);
+
+                    queryClient.removeQueryWithKey("app-credentials-status");
                     navigate("/");
-                  }, 1500);
+                  } catch (err) {
+                    setIsSubmitting(false);
+                    throw err;
+                  }
                 }}
                 listener={window.api.onboarding.onLog}
               />

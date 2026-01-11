@@ -38,9 +38,7 @@ export function useWorkspace() {
 
 export function useWorkspaceSetter() {
   if (!useContext(WorkspaceContextSetter)) {
-    throw new Error(
-      "useWorkspace setter must be used within a context provider"
-    );
+    throw new Error("useWorkspace setter must be used within a context provider");
   }
   return useContext(WorkspaceContextSetter);
 }

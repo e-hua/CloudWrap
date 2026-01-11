@@ -5,7 +5,7 @@ import { getErrorMessage } from "@/utils/errors";
 import { ipcMain } from "electron";
 
 function setupOnboardingHandler() {
-  const activeChannels = new Set<string>();
+  const activeChannels = new Map<string, Promise<void>>();
 
   ipcMain.handle("onboarding:start", async (event, { accessKey, secretKey, region }) => {
     const channel = `onboarding-internal:start`;
@@ -13,9 +13,18 @@ function setupOnboardingHandler() {
     if (activeChannels.has(channel)) {
       console.log(`Channel ${activeChannels} is already in progress.`);
       console.log("Onboarding is already in progress.");
+
+      const createdChannelFinishedSignalPromise = activeChannels.get(channel);
+      await createdChannelFinishedSignalPromise;
       return;
     }
-    activeChannels.add(channel);
+
+    const {
+      resolve: resolveChannelFinishedSignalPromise,
+      promise: channelFinishedSignalPromise,
+      reject: rejectChannelFinishedSignalPromise
+    } = Promise.withResolvers<void>();
+    activeChannels.set(channel, channelFinishedSignalPromise);
 
     const logCallback = (elem: StreamData) => {
       console.log(elem.data);
@@ -34,9 +43,11 @@ function setupOnboardingHandler() {
         data: "IAM roles and OpenTofu state buckets created successfully!"
       });
       event.sender.send(channel, { end: true });
+      resolveChannelFinishedSignalPromise();
     } catch (err) {
       console.error(err);
       event.sender.send(channel, { source: "sys-failure", data: getErrorMessage(err), end: true });
+      rejectChannelFinishedSignalPromise(err);
       throw err;
     } finally {
       activeChannels.delete(channel);
@@ -46,6 +57,15 @@ function setupOnboardingHandler() {
   ipcMain.handle("onboarding:configs", async () => {
     try {
       const configs = ConfigManager.getConfig();
+      return { success: true, data: configs };
+    } catch (err) {
+      return { success: false, error: getErrorMessage(err) };
+    }
+  });
+
+  ipcMain.handle("onboarding:reset", async () => {
+    try {
+      const configs = await ConfigManager.clear();
       return { success: true, data: configs };
     } catch (err) {
       return { success: false, error: getErrorMessage(err) };

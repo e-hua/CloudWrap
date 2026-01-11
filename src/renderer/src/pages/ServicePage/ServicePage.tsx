@@ -1,7 +1,9 @@
 import { fetchServices } from "@/apis/services/services";
 import ProjectCard from "@/components/ProjectCard";
 import Button from "@/components/ui/Button";
+import { useWorkspaceSetter } from "@/hooks/UseWorkspace";
 import { useQuery } from "@/lib/query-lite";
+import { useEffect } from "react";
 import { useNavigate } from "react-router";
 
 function ServicePage() {
@@ -9,8 +11,14 @@ function ServicePage() {
 
   const { data, error, status } = useQuery({
     queryKey: "services",
-    queryFunction: fetchServices,
+    queryFunction: fetchServices
   });
+
+  const setWorkspace = useWorkspaceSetter();
+
+  useEffect(() => {
+    setWorkspace("Services");
+  }, [setWorkspace]);
 
   if (status === "error") {
     return <p className="text-red-400">Error:{error}</p>;
