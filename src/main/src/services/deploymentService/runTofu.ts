@@ -1,3 +1,4 @@
+import { getStrictAwsCredentials, getStrictAwsRegion } from "@/config/aws.config";
 import getTofuBinaryPath from "@/utils/paths";
 import { spawn } from "child_process";
 
@@ -17,12 +18,17 @@ type RunTofuCommand = {
 function runTofu({ args, dirPath, onStream }: RunTofuCommand): Promise<void> {
   const tofuPath = getTofuBinaryPath();
 
+  const { accessKeyId, secretAccessKey } = getStrictAwsCredentials();
+  const region = getStrictAwsRegion();
+
   return new Promise<void>((resolve, reject) => {
     const tofu_process = spawn(tofuPath, args, {
       cwd: dirPath,
       env: {
-        ...process.env,
-      },
+        AWS_ACCESS_KEY_ID: accessKeyId,
+        AWS_SECRET_ACCESS_KEY: secretAccessKey,
+        AWS_REGION: region
+      }
     });
 
     tofu_process.stdout.on("data", (data) => {
@@ -47,26 +53,31 @@ function runTofu({ args, dirPath, onStream }: RunTofuCommand): Promise<void> {
   });
 }
 
-function runTofuAndCollect({args, dirPath}: Omit<RunTofuCommand, 'onStream'>): Promise<string> {
+function runTofuAndCollect({ args, dirPath }: Omit<RunTofuCommand, "onStream">): Promise<string> {
   const tofuPath = getTofuBinaryPath();
+
+  const { accessKeyId, secretAccessKey } = getStrictAwsCredentials();
+  const region = getStrictAwsRegion();
 
   return new Promise<string>((resolve, reject) => {
     const tofu_process = spawn(tofuPath, args, {
       cwd: dirPath,
       env: {
-        ...process.env,
-      },
+        AWS_ACCESS_KEY_ID: accessKeyId,
+        AWS_SECRET_ACCESS_KEY: secretAccessKey,
+        AWS_REGION: region
+      }
     });
 
-    let stdout = ''
-    let stderr = ''
+    let stdout = "";
+    let stderr = "";
 
     tofu_process.stdout.on("data", (data) => {
-      stdout+=data.toString();
+      stdout += data.toString();
     });
 
     tofu_process.stderr.on("data", (data) => {
-      stderr+=data.toString()
+      stderr += data.toString();
     });
 
     tofu_process.on("close", (code) => {
@@ -84,4 +95,4 @@ function runTofuAndCollect({args, dirPath}: Omit<RunTofuCommand, 'onStream'>): P
 }
 
 export type { StreamData, RunTofuCommand };
-export { runTofu, runTofuAndCollect};
+export { runTofu, runTofuAndCollect };

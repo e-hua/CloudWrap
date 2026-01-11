@@ -15,6 +15,7 @@ import { Granularity, ResultByTime } from "@aws-sdk/client-cost-explorer";
 import { _Object, Bucket } from "@aws-sdk/client-s3";
 import { EC2_API_Instance } from "@shared/ec2.type";
 import type { AppConfig, AppSecrets } from "@shared/onboarding.type";
+import type { ConnectionStatus } from "@aws-sdk/client-codestar-connections";
 
 export type IPCSuccessResponse<T> = {
   success: true;
@@ -102,5 +103,8 @@ export type CustomAPI = {
     onLog: (callback: (data: StreamData) => void) => () => void;
     configs: () => Promise<IPCDataResponse<AppConfig & Partial<AppSecrets>>>;
     reset: () => Promise<IPCMessageResponse>;
+    githubConnection: (
+      githubConnectionArn: string
+    ) => Promise<IPCDataResponse<ConnectionStatus | undefined>>;
   };
 };

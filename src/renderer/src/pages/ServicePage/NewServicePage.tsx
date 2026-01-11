@@ -10,9 +10,10 @@ import Button from "@/components/ui/Button";
 import type {
   CreateServicePayload,
   ServerAttributesType,
-  StaticSiteAttributesType,
+  StaticSiteAttributesType
 } from "@/apis/services/service.schema";
 import NewServiceDeploymentView from "./LogViews/NewServiceDeploymentView";
+import { useQuery } from "@/lib/query-lite";
 
 type InputFieldProps = {
   text: string;
@@ -42,9 +43,7 @@ function InputField({ text, value, setValue }: InputFieldProps) {
   );
 }
 
-type ServiceSpecificAttributesType =
-  | StaticSiteAttributesType
-  | ServerAttributesType;
+type ServiceSpecificAttributesType = StaticSiteAttributesType | ServerAttributesType;
 
 function NewServicePage() {
   const [repoId, setRepoId] = useState<string>("");
@@ -55,17 +54,24 @@ function NewServicePage() {
   const [serviceSpecificAttributes, setServiceSpecificAttributes] =
     useState<ServiceSpecificAttributesType>({
       buildCommand: "npm run build",
-      publishDirectory: "dist",
+      publishDirectory: "dist"
     });
 
-  const [payload, setPayload] = useState<CreateServicePayload | undefined>(
-    undefined
-  );
+  const [payload, setPayload] = useState<CreateServicePayload | undefined>(undefined);
 
-  const onChangeProjectType = (
-    previousType: ProjectType,
-    newType: ProjectType
-  ) => {
+  const { data } = useQuery({
+    queryKey: "app-credentials-status",
+    queryFunction: async () => {
+      const res = await window.api.onboarding.configs();
+      if (!res.success) {
+        throw new Error(res.error);
+      }
+      return res.data;
+    },
+    staleTime: 5000
+  });
+
+  const onChangeProjectType = (previousType: ProjectType, newType: ProjectType) => {
     if (newType === previousType) {
       return;
     }
@@ -74,12 +80,12 @@ function NewServicePage() {
       setServiceSpecificAttributes({
         container_port: 3030,
         instance_type: "t3.nano",
-        dockerfile_path: "./Dockerfile",
+        dockerfile_path: "./Dockerfile"
       });
     } else {
       setServiceSpecificAttributes({
         buildCommand: "npm run build",
-        publishDirectory: "dist",
+        publishDirectory: "dist"
       });
     }
   };
@@ -92,7 +98,7 @@ function NewServicePage() {
     flex flex-col gap-5
     `}
     >
-      <div className="flex flex-col bg-sidebar-background border-1 border-sidebar-border w-full h-full px-4 pt-4 gap-y-2 rounded-xl">
+      <div className="flex flex-col bg-sidebar-background border border-sidebar-border w-full h-full px-4 pt-4 gap-y-2 rounded-xl">
         <div className="w-full">
           <h1 className="text-text-primary text-3xl text-left font-semibold">
             Let's build something new
@@ -111,9 +117,7 @@ function NewServicePage() {
             value={repoId}
             onChange={(event) => setRepoId(event.target.value)}
             className="px-2 w-125"
-            placeholder={
-              "Enter a Github repo Id to continue, format: user_name/repo_name"
-            }
+            placeholder={"Enter a Github repo Id to continue, format: user_name/repo_name"}
           />
         </div>
 
@@ -139,17 +143,9 @@ function NewServicePage() {
         <hr className="my-2 text-sidebar-border" />
 
         <div className="flex flex-row items-center justify-between">
-          <InputField
-            text={"Project Name"}
-            value={projectName}
-            setValue={setProjectName}
-          />
+          <InputField text={"Project Name"} value={projectName} setValue={setProjectName} />
 
-          <InputField
-            text={"Root Directory"}
-            value={rootDirectory}
-            setValue={setRootDirectory}
-          />
+          <InputField text={"Root Directory"} value={rootDirectory} setValue={setRootDirectory} />
         </div>
 
         <div className="p-2 projectType">
@@ -158,7 +154,7 @@ function NewServicePage() {
             <ToggleGroup
               options={[
                 { value: "static-site", text: "Static Site" },
-                { value: "server", text: "Web Server" },
+                { value: "server", text: "Web Server" }
               ]}
               value={projectType}
               onValueChange={(value: ProjectType) => {
@@ -187,23 +183,21 @@ function NewServicePage() {
                 projectType === "static-site"
                   ? {
                       type: projectType,
-                      githubConnectionArn:
-                        "arn:aws:codestar-connections:us-east-2:276291856310:connection/e7b8cd7c-295f-4776-9f93-4356f180edd6",
+                      githubConnectionArn: data?.isOnboarded ? data.githubConnectionArn : "",
                       projectName,
                       githubRepoId: repoId,
                       githubBranchName: branchName,
                       rootDirectory,
-                      ...(serviceSpecificAttributes as StaticSiteAttributesType),
+                      ...(serviceSpecificAttributes as StaticSiteAttributesType)
                     }
                   : {
                       type: projectType,
-                      githubConnectionArn:
-                        "arn:aws:codestar-connections:us-east-2:276291856310:connection/e7b8cd7c-295f-4776-9f93-4356f180edd6",
+                      githubConnectionArn: data?.isOnboarded ? data.githubConnectionArn : "",
                       projectName,
                       githubRepoId: repoId,
                       githubBranchName: branchName,
                       rootDirectory,
-                      ...(serviceSpecificAttributes as ServerAttributesType),
+                      ...(serviceSpecificAttributes as ServerAttributesType)
                     };
 
               setPayload(newPayload);
@@ -219,7 +213,7 @@ function NewServicePage() {
         <div
           className={`
         bg-sidebar-background 
-        border-1 border-sidebar-border 
+        border border-sidebar-border 
         p-4 rounded-xl`}
         >
           <NewServiceDeploymentView payload={payload} />
@@ -235,15 +229,11 @@ type NewServicePanelProps = {
   setAttributes: (attr: ServiceSpecificAttributesType) => void;
 };
 
-function NewServicePanel({
-  projectType,
-  attributes,
-  setAttributes,
-}: NewServicePanelProps) {
+function NewServicePanel({ projectType, attributes, setAttributes }: NewServicePanelProps) {
   const updateAttributes = (key: string, value: any) => {
     setAttributes({
       ...attributes,
-      [key]: value,
+      [key]: value
     } as ServiceSpecificAttributesType);
   };
 
@@ -255,9 +245,7 @@ function NewServicePanel({
           <InputField
             text={"Container Port"}
             value={serverAttributes?.container_port ?? ""}
-            setValue={(val: string) =>
-              updateAttributes("container_port", Number(val))
-            }
+            setValue={(val: string) => updateAttributes("container_port", Number(val))}
           />
 
           <InputField
@@ -298,9 +286,7 @@ function NewServicePanel({
           <InputField
             text={"Publish Directory"}
             value={siteAttributes?.publishDirectory ?? ""}
-            setValue={(val: string) =>
-              updateAttributes("publishDirectory", val)
-            }
+            setValue={(val: string) => updateAttributes("publishDirectory", val)}
           />
         </div>
       </>

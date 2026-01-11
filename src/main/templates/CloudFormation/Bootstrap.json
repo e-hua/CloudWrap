@@ -18,8 +18,13 @@
       "Description": "If CreateNewBucket is No, provide the existing bucket name here (for output consistency)."
     },
     "TargetBucketName": {
-       "Type": "String",
-       "Description": "The exact name to force for the State Bucket"
+      "Type": "String",
+      "Description": "The exact name to force for the State Bucket"
+    },
+    "ConnectionNonce": {
+      "Type": "String",
+      "Default": "1",
+      "Description": "Increment this to force-recreate the connection if it was deleted manually."
     }
   },
   "Conditions": {
@@ -48,29 +53,33 @@
     "CloudWrapProvisioningRole": {
       "Type": "AWS::IAM::Role",
       "Properties": {
-         "RoleName": "CloudWrap-Provisioning-Role",
-         "AssumeRolePolicyDocument": {
-           "Version": "2012-10-17",
-           "Statement": [{
-             "Effect": "Allow",
-             "Principal": { "AWS": { "Ref": "BootstrapUserArn" } },
-             "Action": "sts:AssumeRole"
-           }]
-         },
-         "ManagedPolicyArns": ["arn:aws:iam::aws:policy/AdministratorAccess"]
+        "RoleName": { "Fn::Sub": "CloudWrap-Provisioning-Role-${AWS::Region}" },
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": { "AWS": { "Ref": "BootstrapUserArn" } },
+              "Action": "sts:AssumeRole"
+            }
+          ]
+        },
+        "ManagedPolicyArns": ["arn:aws:iam::aws:policy/AdministratorAccess"]
       }
     },
     "CloudWrapServiceRole": {
       "Type": "AWS::IAM::Role",
       "Properties": {
-        "RoleName": "CloudWrap-Service-Role",
+        "RoleName": { "Fn::Sub": "CloudWrap-Service-Role-${AWS::Region}" },
         "AssumeRolePolicyDocument": {
           "Version": "2012-10-17",
-          "Statement": [{
-            "Effect": "Allow",
-            "Principal": { "AWS": { "Ref": "BootstrapUserArn" } },
-            "Action": "sts:AssumeRole"
-          }]
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": { "AWS": { "Ref": "BootstrapUserArn" } },
+              "Action": "sts:AssumeRole"
+            }
+          ]
         },
         "ManagedPolicyArns": [
           "arn:aws:iam::aws:policy/AmazonEC2FullAccess",
@@ -80,26 +89,44 @@
         ],
         "Policies": [
           {
-             "PolicyName": "CloudWrapExtendedAccess",
-             "PolicyDocument": {
-               "Version": "2012-10-17",
-               "Statement": [
-                  { "Effect": "Allow", "Action": ["ce:Get*", "ce:Describe*", "codeconnections:CreateConnection", "codebuild:BatchGetBuilds", "codepipeline:*"], "Resource": "*" }
-               ]
-             }
+            "PolicyName": "CloudWrapExtendedAccess",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "ce:Get*",
+                    "ce:Describe*",
+                    "codeconnections:GetConnection",
+                    "codeconnections:CreateConnection",
+                    "codebuild:BatchGetBuilds",
+                    "codepipeline:*"
+                  ],
+                  "Resource": "*"
+                }
+              ]
+            }
           }
         ]
+      }
+    },
+    "GithubConnection": {
+      "Type": "AWS::CodeStarConnections::Connection",
+      "Properties": {
+        "ConnectionName": { "Fn::Sub": "CloudWrap-GitHub-${ConnectionNonce}" },
+        "ProviderType": "GitHub"
       }
     }
   },
   "Outputs": {
     "BucketName": {
-      "Value": { 
+      "Value": {
         "Fn::If": [
-          "ShouldCreateBucket", 
-          { "Ref": "CloudWrapStateBucket" }, 
+          "ShouldCreateBucket",
+          { "Ref": "CloudWrapStateBucket" },
           { "Ref": "ExistingBucketName" }
-        ] 
+        ]
       },
       "Description": "The S3 bucket for OpenTofu state"
     },
@@ -108,6 +135,10 @@
     },
     "ServiceRoleArn": {
       "Value": { "Fn::GetAtt": ["CloudWrapServiceRole", "Arn"] }
+    },
+    "GithubConnectionArn": {
+      "Description": "The ARN of the CodeStar Connection",
+      "Value": { "Ref": "GithubConnection" }
     }
   }
 }

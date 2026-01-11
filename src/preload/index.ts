@@ -80,7 +80,9 @@ const api: CustomAPI = {
     start: (credentials) => ipcRenderer.invoke("onboarding:start", credentials),
     configs: () => ipcRenderer.invoke("onboarding:configs"),
     onLog: (callback) => createInternalListener<StreamData>("onboarding-internal:start", callback),
-    reset: () => ipcRenderer.invoke("onboarding:reset")
+    reset: () => ipcRenderer.invoke("onboarding:reset"),
+    githubConnection: (githubConnectionArn) =>
+      ipcRenderer.invoke("onboarding:github-connection", githubConnectionArn)
   }
 };
 

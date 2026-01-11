@@ -71,8 +71,25 @@ function CredentialsPage() {
         throw new Error(res.error);
       }
       return res.data;
-    }
+    },
+    staleTime: 5000
   });
+
+  const { data: githubConnection, status: connectionLoadingStatus } = useQuery({
+    queryKey: "app-github-connection",
+    queryFunction: async () => {
+      const res = await window.api.onboarding.githubConnection(
+        data?.isOnboarded ? data.githubConnectionArn : ""
+      );
+
+      if (!res.success) {
+        throw new Error(res.error);
+      }
+      return res.data;
+    },
+    staleTime: 5000
+  });
+
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const [deleting, setDeleting] = useState(false);
@@ -87,6 +104,20 @@ function CredentialsPage() {
     queryClient.removeQueryWithKey("app-credentials-status");
     navigate("/onboarding");
   }
+
+  const openAwsConsole = () => {
+    if (data?.isOnboarded) {
+      if (!data?.githubConnectionArn || !data?.awsRegion) return;
+
+      const parts = data.githubConnectionArn.split(":");
+      const region = parts[3];
+      const accountId = parts[4];
+      const connectionId = parts[5].split("/")[1];
+
+      const url = `https://${region}.console.aws.amazon.com/codesuite/settings/${accountId}/${region}/codestar-connections/connections/${connectionId}?region=${region}`;
+      window.open(url, "_blank");
+    }
+  };
 
   if (!data?.isOnboarded) {
     return (
@@ -103,20 +134,40 @@ function CredentialsPage() {
     <div className="w-full h-full p-5 flex flex-col gap-10">
       <div className="flex flex-col w-full justify-between gap-4">
         <h1 className="text-text-primary text-xl">Credentials and Configs</h1>
-        <div className="flex flex-row justify-between">
+        <div className="flex flex-row justify-between items-center">
           <p className="text-text-secondary text-sm mt-1">
             Manage your connection to AWS and CloudWrap resources.
           </p>
-          <Button
-            variation="destructive"
-            className="text-center"
-            onClick={async () => {
-              setDeleting(true);
-              await resetKeys();
-            }}
-          >
-            {deleting ? <LoaderCircle className="animate-spin" /> : <p>Delete keys</p>}
-          </Button>
+          <div className="flex flex-row w-fit gap-5">
+            <Button
+              variation={githubConnection === "AVAILABLE" ? "disabled" : "secondary"}
+              className="text-center"
+              onClick={() => {
+                openAwsConsole();
+                queryClient.invalidateQuery("app-github-connection");
+              }}
+            >
+              {connectionLoadingStatus === "success" ? (
+                githubConnection === "AVAILABLE" ? (
+                  "Github Connected!"
+                ) : (
+                  "Verify Github ARN"
+                )
+              ) : (
+                <LoaderCircle className="animate-spin" />
+              )}
+            </Button>
+            <Button
+              variation="destructive"
+              className="text-center"
+              onClick={async () => {
+                setDeleting(true);
+                await resetKeys();
+              }}
+            >
+              {deleting ? <LoaderCircle className="animate-spin" /> : <p>Delete keys</p>}
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -138,6 +189,11 @@ function CredentialsPage() {
           <ConfigRow label={"OpenTofu state bucket name"} value={data.tfStateBucket} copy />
           <ConfigRow label={"OpenTofu provision IAM role ARN"} value={data.tfRoleARN} copy />
           <ConfigRow label={"CloudWrap service IAM role ARN"} value={data.roleARN} copy />
+          <ConfigRow
+            label={"CloudWrap Github connection ARN"}
+            value={data.githubConnectionArn}
+            copy
+          />
         </div>
       </div>
     </div>

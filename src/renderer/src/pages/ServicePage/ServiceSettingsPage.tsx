@@ -66,11 +66,21 @@ function ServiceSettingsPage() {
   const [submittingUpdates, setSubmittingUpdates] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
+  const { data: appConfigs } = useQuery({
+    queryKey: "app-credentials-status",
+    queryFunction: async () => {
+      const res = await window.api.onboarding.configs();
+      if (!res.success) {
+        throw new Error(res.error);
+      }
+      return res.data;
+    },
+    staleTime: 5000
+  });
+
   const [updatePayload, setUpdatePayload] = useState<UpdateServicePayload>({
     type: "server",
-    // Hardcoded dummy value for testing, need to be updated later
-    githubConnectionArn:
-      "arn:aws:codestar-connections:us-east-2:276291856310:connection/e7b8cd7c-295f-4776-9f93-4356f180edd6"
+    githubConnectionArn: appConfigs?.isOnboarded ? appConfigs.githubConnectionArn : ""
   });
 
   const queryClient = useQueryClient();

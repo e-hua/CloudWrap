@@ -1,4 +1,5 @@
 import { StreamData } from "@/services/deploymentService/runTofu";
+import { getGithubConnectionStatus } from "@/services/onboardingService/githubConnectionService";
 import { startOnboarding } from "@/services/onboardingService/onboardingService";
 import { ConfigManager } from "@/utils/ConfigManager";
 import { getErrorMessage } from "@/utils/errors";
@@ -67,6 +68,15 @@ function setupOnboardingHandler() {
     try {
       const configs = await ConfigManager.clear();
       return { success: true, data: configs };
+    } catch (err) {
+      return { success: false, error: getErrorMessage(err) };
+    }
+  });
+
+  ipcMain.handle("onboarding:github-connection", async (_, connectionArn: string) => {
+    try {
+      const data = await getGithubConnectionStatus(connectionArn);
+      return { success: true, data };
     } catch (err) {
       return { success: false, error: getErrorMessage(err) };
     }

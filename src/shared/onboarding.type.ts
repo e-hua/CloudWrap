@@ -4,6 +4,7 @@ type AppConfig =
       roleARN: string;
       tfStateBucket: string;
       tfRoleARN: string;
+      githubConnectionArn: string;
       isOnboarded: true;
     }
   | {

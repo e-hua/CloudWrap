@@ -5,6 +5,7 @@ import {
   Capability,
   CloudFormationClient,
   CreateStackCommand,
+  DeleteStackCommand,
   DescribeStackEventsCommand,
   DescribeStacksCommand,
   Stack,
@@ -16,6 +17,7 @@ import path from "path";
 import fs from "fs-extra";
 import { sleep } from "@/utils/sleep";
 import { ConfigManager } from "@/utils/ConfigManager";
+import { getGithubConnectionStatus } from "./githubConnectionService";
 
 const TARGET_BUCKET = "tf-state-cloudwrap";
 const BOOTSTRAP_CONFIG_FILENAME = "Bootstrap.json";
@@ -26,6 +28,18 @@ type OnboardingParams = {
   region: string;
   onLog: (elem: StreamData) => void;
 };
+
+async function getStackStatus(cloudFormationClient: CloudFormationClient, stackName: string) {
+  try {
+    const data = await cloudFormationClient.send(
+      new DescribeStacksCommand({ StackName: stackName })
+    );
+    return data.Stacks?.[0]?.StackStatus;
+  } catch (err) {
+    console.error(err);
+    return null;
+  }
+}
 
 const checkBucketExists = async (s3: S3Client, bucketName: string) => {
   try {
@@ -124,7 +138,8 @@ async function startOnboarding({ accessKey, secretKey, region, onLog }: Onboardi
   const identity = await stsClient.send(new GetCallerIdentityCommand({}));
   onLog({ source: "sys-info", data: "Authenticated" });
 
-  const uniqueBucketName = `${TARGET_BUCKET}-${identity.Account}`;
+  const uniqueBucketName = `${TARGET_BUCKET}-${identity.Account}-${region}`;
+  console.log("bucket name", uniqueBucketName);
   const bucketExists = await checkBucketExists(s3Client, uniqueBucketName);
   if (bucketExists) {
     onLog({ source: "sys-info", data: `Found existing bucket: ${uniqueBucketName} ` });
@@ -141,12 +156,44 @@ async function startOnboarding({ accessKey, secretKey, region, onLog }: Onboardi
     { ParameterKey: "ExistingBucketName", ParameterValue: bucketExists ? uniqueBucketName : "" }
   ];
 
+  try {
+    const config = ConfigManager.getConfig();
+    await getGithubConnectionStatus(config.isOnboarded ? config.githubConnectionArn : "");
+  } catch (error) {
+    onLog({
+      source: "sys-info",
+      data: `Detected missing GitHub connection. Error: ${error}  Forcing recreation...`
+    });
+
+    params.push({
+      ParameterKey: "ConnectionNonce",
+      ParameterValue: Date.now().toString()
+    });
+  }
+
   const stackInput = {
     StackName: stackName,
     TemplateBody: templateBody,
     Capabilities: [Capability.CAPABILITY_NAMED_IAM],
     Parameters: params
   };
+
+  const stackStatus = await getStackStatus(cloudFormationClient, stackName);
+
+  if (stackStatus === "ROLLBACK_COMPLETE") {
+    onLog({
+      source: "sys-info",
+      data: "Stack is in ROLLBACK_COMPLETE. Deleting old stack to retry..."
+    });
+    await cloudFormationClient.send(new DeleteStackCommand({ StackName: stackName }));
+
+    let deleting = true;
+    while (deleting) {
+      const status = await getStackStatus(cloudFormationClient, stackName);
+      if (!status) deleting = false;
+      else await sleep(2000);
+    }
+  }
 
   onLog({ source: "sys-info", data: "Running CloudFormation template..." });
   try {
@@ -163,8 +210,11 @@ async function startOnboarding({ accessKey, secretKey, region, onLog }: Onboardi
   const bucket = stack?.Outputs?.find((o) => o.OutputKey === "BucketName")?.OutputValue;
   const tfRoleArn = stack?.Outputs?.find((o) => o.OutputKey === "TfRoleArn")?.OutputValue;
   const serviceRoleArn = stack?.Outputs?.find((o) => o.OutputKey === "ServiceRoleArn")?.OutputValue;
+  const githubConnectionArn = stack?.Outputs?.find(
+    (o) => o.OutputKey === "GithubConnectionArn"
+  )?.OutputValue;
 
-  if (!bucket || !tfRoleArn || !serviceRoleArn) {
+  if (!bucket || !tfRoleArn || !serviceRoleArn || !githubConnectionArn) {
     throw new Error("Stack completed but returned missing outputs.");
   }
 
@@ -174,6 +224,7 @@ async function startOnboarding({ accessKey, secretKey, region, onLog }: Onboardi
     tfStateBucket: bucket,
     tfRoleARN: tfRoleArn,
     roleARN: serviceRoleArn,
+    githubConnectionArn,
     isOnboarded: true
   });
 
