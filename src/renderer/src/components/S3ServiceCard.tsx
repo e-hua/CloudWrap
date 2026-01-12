@@ -4,6 +4,7 @@ import { useNavigate } from "react-router";
 import { Trash, Settings } from "lucide-react";
 import { deleteBucket } from "@/apis/s3";
 import Card, { CardEntry } from "@/components/ui/Card";
+import awsIcon from "@/public/aws.svg";
 
 type S3ServiceCardProps = {
   serviceType: string;
@@ -16,14 +17,12 @@ export default function S3ServiceCard({
   serviceType,
   serviceName = "-",
   creationDate = new Date(),
-  serviceProvider,
+  serviceProvider
 }: S3ServiceCardProps) {
   const navigate = useNavigate();
   const serviceHeader = (
     <Link to={`/${serviceType}/${serviceName}`}>
-      <h1 className="text-text-primary hover:text-accent text-sm underline">
-        {serviceName}
-      </h1>
+      <h1 className="text-text-primary hover:text-accent text-sm underline">{serviceName}</h1>
     </Link>
   );
   const dropDownEntries = (
@@ -55,9 +54,7 @@ export default function S3ServiceCard({
       </CardEntry>
 
       <CardEntry entryName="created at">
-        <p className="text-text-primary text-xs">
-          {creationDate.toISOString().substring(0, 10)}
-        </p>
+        <p className="text-text-primary text-xs">{creationDate.toISOString().substring(0, 10)}</p>
       </CardEntry>
 
       <CardEntry entryName="provider">
@@ -81,15 +78,11 @@ function ServiceTypeToIcon({ serviceType }: { serviceType: string }) {
   }
 }
 
-function ServiceProviderToIcon({
-  serviceProvider,
-}: {
-  serviceProvider: string;
-}) {
+function ServiceProviderToIcon({ serviceProvider }: { serviceProvider: string }) {
   if (serviceProvider === "AWS") {
     return (
       <div className="flex items-center rounded-sm size-8 text-text-primary p-0.5">
-        <img src="/aws.svg" alt="AWS" />
+        <img src={awsIcon} alt="AWS" />
       </div>
     );
   } else {

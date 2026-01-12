@@ -8,74 +8,70 @@ import {
   Loader,
   RotateCw,
   Power,
-  TriangleAlert,
+  TriangleAlert
 } from "lucide-react";
 import Card, { CardEntry } from "./ui/Card";
 import { Globe } from "lucide-react";
-import {
-  deleteInstance,
-  restartInstance,
-  startInstance,
-  stopInstance,
-} from "../apis/ec2";
+import { deleteInstance, restartInstance, startInstance, stopInstance } from "../apis/ec2";
 import clsx from "clsx";
 import type { ReactNode } from "react";
+import awsIcon from "@/public/aws.svg";
 
 const STATE_MAPPING = {
   pending: {
     className: "text-orange-400",
     get icon() {
       return <Hourglass size={15} className={this.className} />;
-    },
+    }
   },
 
   running: {
     className: "text-green-500",
     get icon() {
       return <CircleCheckBig size={15} className={this.className} />;
-    },
+    }
   },
 
   stopping: {
     className: "text-purple-400",
     get icon() {
       return <Loader size={15} className={this.className} />;
-    },
+    }
   },
 
   stopped: {
     className: "text-purple-700",
     get icon() {
       return <CirclePause size={15} className={this.className} />;
-    },
+    }
   },
 
   rebooting: {
     className: "text-blue-400",
     get icon() {
       return <RotateCw size={15} className={this.className} />;
-    },
+    }
   },
 
   "shutting-down": {
     className: "text-red-400",
     get icon() {
       return <Power size={15} className={this.className} />;
-    },
+    }
   },
 
   terminated: {
     className: "text-red-600",
     get icon() {
       return <Trash size={15} className={this.className} />;
-    },
+    }
   },
 
   unknown: {
     className: "text-gray-400",
     get icon() {
       return <CircleDot size={15} className={this.className} />;
-    },
+    }
   },
 
   // Error or failure case
@@ -83,8 +79,8 @@ const STATE_MAPPING = {
     className: "text-red-500",
     get icon() {
       return <TriangleAlert size={15} className={this.className} />;
-    },
-  },
+    }
+  }
 };
 
 type EC2ServiceCardProps = {
@@ -110,13 +106,11 @@ export default function EC2ServiceCard({
   creationDate,
   publicIp,
   platform,
-  serviceProvider,
+  serviceProvider
 }: EC2ServiceCardProps) {
   const serviceHeader = (
     <Link to={`/instances/`}>
-      <h1 className="text-text-primary hover:text-accent text-sm underline">
-        {Name}
-      </h1>
+      <h1 className="text-text-primary hover:text-accent text-sm underline">{Name}</h1>
     </Link>
   );
 
@@ -191,7 +185,6 @@ export default function EC2ServiceCard({
     </>
   );
 
-
   const stateKey = (instanceState || "unknown") as keyof typeof STATE_MAPPING;
   const entires = (
     <>
@@ -222,9 +215,7 @@ export default function EC2ServiceCard({
       </CardEntry>
 
       <CardEntry entryName="Launch time">
-        <EntryText>
-          {creationDate?.substring(0, 10) || "Creation Date Not Available"}
-        </EntryText>
+        <EntryText>{creationDate?.substring(0, 10) || "Creation Date Not Available"}</EntryText>
       </CardEntry>
 
       <CardEntry entryName="Platform">
@@ -244,15 +235,11 @@ export default function EC2ServiceCard({
   );
 }
 
-function ServiceProviderToIcon({
-  serviceProvider,
-}: {
-  serviceProvider: string;
-}) {
+function ServiceProviderToIcon({ serviceProvider }: { serviceProvider: string }) {
   if (serviceProvider === "AWS") {
     return (
       <div className="flex items-center rounded-sm size-8 text-text-primary p-0.5">
-        <img src="/aws.svg" alt="AWS" />
+        <img src={awsIcon} alt="AWS" />
       </div>
     );
   } else {

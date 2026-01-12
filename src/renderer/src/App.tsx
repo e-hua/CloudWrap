@@ -11,7 +11,7 @@ import { TestDashboard } from "@/lib/query-lite/tests/TestDashboard";
 import TestLogViewPage from "./pages/TestLogViewPage";
 import LogViewPage from "./pages/LogViewPage";
 import ServicePage from "./pages/ServicePage/ServicePage";
-import { QueryClient, QueryClientProvider, QueryLiteDevtools } from "./lib/query-lite";
+import { QueryClient, QueryClientProvider } from "./lib/query-lite";
 import NewServicePage from "./pages/ServicePage/NewServicePage";
 import ServiceLayout from "./pages/ServicePage/ServiceLayout";
 import ServiceSettingsPage from "./pages/ServicePage/ServiceSettingsPage";
@@ -20,6 +20,7 @@ import ServiceDeploymentRunsPage from "./pages/ServicePage/ServiceDeploymentRuns
 import CredentialsPage from "./pages/CredentialsPage";
 import OnboardingPage from "./pages/OnboardingPage";
 import AuthGuard from "./pages/AuthGuardPage";
+// import { QueryLiteDevtools } from "./lib/query-lite";
 
 const queryClient = new QueryClient();
 
@@ -59,9 +60,11 @@ function App() {
           </Routes>
         </ThemeProvider>
       </WorkspaceProvider>
+      {/*
       <div className="fixed bottom-0 w-full">
         <QueryLiteDevtools />
       </div>
+         */}
     </QueryClientProvider>
   );
 }

@@ -12,10 +12,12 @@ import {
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue,
+  SelectValue
 } from "@/components/ui/Select";
 import EC2ServiceCard from "@/components/EC2ServiceCard";
 import type { EC2_API_Instance } from "@shared/ec2.type";
+import ubuntuIcon from "@/public/ubuntu.svg";
+import windowsIcon from "@/public/windows.svg";
 
 type PriceKey = "linux_price" | "windows_price";
 
@@ -45,37 +47,37 @@ const INSTANCE_TYPE_MAPPING: Record<string, InstanceType> = {
     vCPUs: 2,
     RAM: "0.5GB",
     linux_price: 0.0056,
-    windows_price: 0.0102,
+    windows_price: 0.0102
   },
   "t3.micro": {
     vCPUs: 2,
     RAM: "1.0GB",
     linux_price: 0.0112,
-    windows_price: 0.0204,
+    windows_price: 0.0204
   },
   "t3.small": {
     vCPUs: 2,
     RAM: "2.0GB",
     linux_price: 0.0224,
-    windows_price: 0.0408,
+    windows_price: 0.0408
   },
   "t3.medium": {
     vCPUs: 2,
     RAM: "4.0GB",
     linux_price: 0.0448,
-    windows_price: 0.0632,
+    windows_price: 0.0632
   },
   "t3.large": {
     vCPUs: 2,
     RAM: "8.0GB",
     linux_price: 0.0896,
-    windows_price: 0.1172,
-  },
+    windows_price: 0.1172
+  }
 };
 
 const INSTANCE_IMAGE_MAPPING = {
-  Linux: <img src="/ubuntu.svg" alt="linux" />,
-  Windows: <img src="/windows.svg" alt="windows" />,
+  Linux: <img src={ubuntuIcon} alt="linux" />,
+  Windows: <img src={windowsIcon} alt="windows" />
 };
 
 function InstanceTypeList() {
@@ -95,13 +97,11 @@ function InstanceTypeList() {
                 </div>
                 <span>
                   On-Demand Linux
-                  <span className="text-accent"> {val.linux_price} </span> per
-                  hour
+                  <span className="text-accent"> {val.linux_price} </span> per hour
                 </span>
                 <span>
                   On-Demand Windows
-                  <span className="text-accent"> {val.windows_price} </span> per
-                  hour
+                  <span className="text-accent"> {val.windows_price} </span> per hour
                 </span>
               </div>
             </div>
@@ -114,7 +114,7 @@ function InstanceTypeList() {
 
 function InstanceImageGroup({
   newInstanceImage,
-  setNewInstanceImage,
+  setNewInstanceImage
 }: {
   newInstanceImage: string;
   setNewInstanceImage: (image: string) => void;
@@ -136,9 +136,7 @@ function InstanceImageGroup({
             onClick={() => setNewInstanceImage(key)}
           >
             <span className="text-text-primary font-mono text-sm">{key}</span>
-            <div className="flex items-center rounded-sm size-20 text-text-primary">
-              {val}
-            </div>
+            <div className="flex items-center rounded-sm size-20 text-text-primary">{val}</div>
           </div>
         );
       })}
@@ -148,7 +146,7 @@ function InstanceImageGroup({
 
 function InstanceCostPanel({
   instanceType,
-  instanceImage,
+  instanceImage
 }: {
   instanceType: string;
   instanceImage: string;
@@ -162,9 +160,7 @@ function InstanceCostPanel({
       <p className="text-text-secondary font-mono text-wrap text-sm">
         Monthly estimate
         <span className="text-accent">
-          {isNaN(parseFloat(monthly_cost))
-            ? " Not available"
-            : ` $${monthly_cost}`}
+          {isNaN(parseFloat(monthly_cost)) ? " Not available" : ` $${monthly_cost}`}
         </span>
       </p>
     </div>
@@ -234,9 +230,7 @@ export default function InstancePage() {
         </div>
 
         <div>
-          <h2 className="text-sm font-medium text-text-secondary">
-            Instance type
-          </h2>
+          <h2 className="text-sm font-medium text-text-secondary">Instance type</h2>
           <Select
             selectedValue={newInstanceType}
             onValueChange={(val) => {
@@ -255,10 +249,7 @@ export default function InstancePage() {
           newInstanceImage={newInstanceImage}
         />
 
-        <InstanceCostPanel
-          instanceImage={newInstanceImage}
-          instanceType={newInstanceType}
-        />
+        <InstanceCostPanel instanceImage={newInstanceImage} instanceType={newInstanceType} />
 
         <div className="flex flex-row justify-end gap-5">
           <Button variation={"secondary"} onClick={modalCleanUp}>
