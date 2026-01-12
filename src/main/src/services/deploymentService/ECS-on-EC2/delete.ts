@@ -28,7 +28,7 @@ async function deleteServer(
   { serviceReader, serviceDeleter, runTofu, mkdtemp, copy, rm, tmpdir }: DeleteServerDeps
 ): Promise<void> {
   const region = getStrictAwsRegion();
-  const { appServiceRoleArn, tfStateBucket } = getStrictTofuConfig();
+  const { tfProvisionRoleArn, tfStateBucket } = getStrictTofuConfig();
 
   const templatePath = path.join(templateDirPath, "opentofu", "server", "ECS-on-EC2");
 
@@ -84,7 +84,7 @@ async function deleteServer(
       "-auto-approve",
       `-var=aws_region=${oldServerService.region}`,
       `-var=project_name=${oldServerService.name}`,
-      `-var=execution_role_arn=${appServiceRoleArn}`,
+      `-var=execution_role_arn=${tfProvisionRoleArn}`,
       `-var=container_port=${oldServerService.containerPort}`,
       `-var=secret_header_value=${oldServerService.secretHeaderValue}`,
 

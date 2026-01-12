@@ -36,7 +36,7 @@ async function createServer(
   }: CreateServerDeps
 ): Promise<void> {
   const region = getStrictAwsRegion();
-  const { appServiceRoleArn, tfStateBucket } = getStrictTofuConfig();
+  const { tfProvisionRoleArn, tfStateBucket } = getStrictTofuConfig();
 
   const templatePath = path.join(templateDirPath, "opentofu", "server", "ECS-on-EC2");
   // Using temporary folder to carry out the deployment
@@ -87,7 +87,7 @@ async function createServer(
       "-auto-approve",
       `-var=aws_region=${region}`,
       `-var=project_name=${inputs.projectName}`,
-      `-var=execution_role_arn=${appServiceRoleArn}`,
+      `-var=execution_role_arn=${tfProvisionRoleArn}`,
       `-var=container_port=${inputs.container_port}`,
       `-var=secret_header_value=${generatedSecret}`,
 

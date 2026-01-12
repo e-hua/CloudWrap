@@ -54,7 +54,7 @@ async function updateStaticSite(
     assumeRole
   }: UpdateStaticSiteDeps
 ): Promise<void> {
-  const { appServiceRoleArn, tfStateBucket } = getStrictTofuConfig();
+  const { tfProvisionRoleArn, tfStateBucket } = getStrictTofuConfig();
 
   const templatePath = path.join(templateDirPath, "opentofu", "static-site");
 
@@ -126,7 +126,7 @@ async function updateStaticSite(
       "-auto-approve",
       `-var=bucket_name=${`${oldSiteService.name}-site-bucket`}`,
       `-var=project_name=${oldSiteService.name}`,
-      `-var=execution_role_arn=${appServiceRoleArn}`,
+      `-var=execution_role_arn=${tfProvisionRoleArn}`,
       `-var=aws_region=${updateSiteInput.region}`,
       `-var=github_repo_id=${updateSiteInput.repoId}`,
       `-var=github_branch_name=${updateSiteInput.branchName}`,

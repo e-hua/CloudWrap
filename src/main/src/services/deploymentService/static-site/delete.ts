@@ -28,7 +28,7 @@ async function deleteStaticSite(
   { serviceReader, serviceDeleter, runTofu, mkdtemp, copy, rm, tmpdir }: DeleteStaticSiteDeps
 ): Promise<void> {
   const region = getStrictAwsRegion();
-  const { appServiceRoleArn, tfStateBucket } = getStrictTofuConfig();
+  const { tfProvisionRoleArn, tfStateBucket } = getStrictTofuConfig();
 
   const templatePath = path.join(templateDirPath, "opentofu", "static-site");
 
@@ -84,7 +84,7 @@ async function deleteStaticSite(
       "-auto-approve",
       `-var=bucket_name=${`${oldSiteService.name}-site-bucket`}`,
       `-var=project_name=${oldSiteService.name}`,
-      `-var=execution_role_arn=${appServiceRoleArn}`,
+      `-var=execution_role_arn=${tfProvisionRoleArn}`,
       `-var=aws_region=${oldSiteService.region}`,
       `-var=github_repo_id=${oldSiteService.repoId}`,
       `-var=github_branch_name=${oldSiteService.branchName}`,

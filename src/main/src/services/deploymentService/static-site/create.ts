@@ -30,7 +30,7 @@ async function createStaticSite(
   { serviceCreator, runTofu, runTofuAndCollect, mkdtemp, copy, rm, tmpdir }: CreateStaticSiteDeps
 ): Promise<void> {
   const region = getStrictAwsRegion();
-  const { appServiceRoleArn, tfStateBucket } = getStrictTofuConfig();
+  const { tfProvisionRoleArn, tfStateBucket } = getStrictTofuConfig();
 
   const templatePath = path.join(templateDirPath, "opentofu", "static-site");
 
@@ -80,7 +80,7 @@ async function createStaticSite(
       "-auto-approve",
       `-var=bucket_name=${`${inputs.projectName}-site-bucket`}`,
       `-var=project_name=${inputs.projectName}`,
-      `-var=execution_role_arn=${appServiceRoleArn}`,
+      `-var=execution_role_arn=${tfProvisionRoleArn}`,
       `-var=aws_region=${region}`,
       `-var=github_repo_id=${inputs.githubRepoId}`,
       `-var=github_branch_name=${inputs.githubBranchName}`,

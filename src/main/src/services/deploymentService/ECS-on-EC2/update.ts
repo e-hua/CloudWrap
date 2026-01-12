@@ -55,7 +55,7 @@ async function updateServer(
   }: UpdateServerDeps
 ): Promise<void> {
   const region = getStrictAwsRegion();
-  const { appServiceRoleArn, tfStateBucket } = getStrictTofuConfig();
+  const { tfProvisionRoleArn, tfStateBucket } = getStrictTofuConfig();
 
   const templatePath = path.join(templateDirPath, "opentofu", "server", "ECS-on-EC2");
 
@@ -129,7 +129,7 @@ async function updateServer(
 
       `-var=aws_region=${region}`,
       `-var=project_name=${oldServerService.name}`,
-      `-var=execution_role_arn=${appServiceRoleArn}`,
+      `-var=execution_role_arn=${tfProvisionRoleArn}`,
       `-var=github_repo_id=${updateServerInput.repoId}`,
       `-var=github_branch_name=${updateServerInput.branchName}`,
       `-var=root_directory=${updateServerInput.rootDir}`,
