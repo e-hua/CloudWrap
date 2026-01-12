@@ -7,3 +7,4 @@ out
 *.log*
 .env
 src/main/resources/bin/
+my-artifacts/

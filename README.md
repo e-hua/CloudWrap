@@ -1,6 +1,6 @@
-# electron-vite
+# CloudWrap
 
-An Electron application with React and TypeScript
+Your Cloud, Wrapped
 
 ## Recommended IDE Setup
 
